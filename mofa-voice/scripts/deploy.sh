@@ -71,6 +71,37 @@ build_server() {
     ok "ominix-api installed at $OMINIX_BIN"
 }
 
+# ── Wait for async model download ────────────────────────────────────
+wait_for_model_deploy() {
+    local model_path="$1" label="$2" server_pid="$3"
+    local elapsed=0 timeout=600 last_size=0
+
+    while [ $elapsed -lt $timeout ]; do
+        if ! kill -0 "$server_pid" 2>/dev/null; then
+            die "$label download failed — server exited"
+        fi
+        if [ -f "$model_path/config.json" ]; then
+            local has_weights=false
+            if [ -f "$model_path/model.safetensors" ]; then has_weights=true
+            elif [ -f "$model_path/model.safetensors.index.json" ]; then
+                local expected actual
+                expected=$(grep -o '"model-[^"]*"' "$model_path/model.safetensors.index.json" 2>/dev/null | sort -u | wc -l)
+                actual=$(ls "$model_path"/model-*.safetensors 2>/dev/null | wc -l)
+                [ "$actual" -ge "$expected" ] && [ "$expected" -gt 0 ] && has_weights=true
+            fi
+            $has_weights && return 0
+        fi
+        if [ -d "$model_path" ]; then
+            local cur_size
+            cur_size=$(du -sm "$model_path" 2>/dev/null | awk '{print $1}')
+            [ "${cur_size:-0}" != "$last_size" ] && printf "  ... %s MB downloaded\r" "${cur_size:-0}" && last_size="${cur_size:-0}"
+        fi
+        sleep 5
+        elapsed=$((elapsed + 5))
+    done
+    die "$label model download timed out after ${timeout}s"
+}
+
 # ── Phase: models ────────────────────────────────────────────────────
 download_models() {
     mkdir -p "$MODELS_DIR"
@@ -79,7 +110,7 @@ download_models() {
     local tts_path="$MODELS_DIR/$TTS_MODEL_NAME"
     local need_download=false
 
-    if [ -d "$asr_path" ] && [ -d "$tts_path" ]; then
+    if [ -f "$asr_path/config.json" ] && [ -f "$tts_path/config.json" ]; then
         ok "Models already downloaded:"
         echo "    ASR: $asr_path"
         echo "    TTS: $tts_path"
@@ -89,7 +120,6 @@ download_models() {
     # Need ominix-api binary for downloading
     local bin="$OMINIX_BIN"
     if [ ! -x "$bin" ]; then
-        # Try build output
         bin="$OMINIX_DIR/target/release/ominix-api"
         if [ ! -x "$bin" ]; then
             die "ominix-api binary not found. Run: ./scripts/deploy.sh server"
@@ -101,7 +131,6 @@ download_models() {
     local tmp_pid=$!
     trap "kill $tmp_pid 2>/dev/null || true" EXIT
 
-    # Wait for health
     local retries=0
     while ! curl -sf "http://localhost:$DOWNLOAD_PORT/health" >/dev/null 2>&1; do
         retries=$((retries + 1))
@@ -113,31 +142,33 @@ download_models() {
     done
     ok "Temporary server ready"
 
-    # Download ASR model
-    if [ ! -d "$asr_path" ]; then
+    # Download ASR model (async — poll for completion)
+    if [ ! -f "$asr_path/config.json" ]; then
+        rm -rf "$asr_path" 2>/dev/null || true
         info "Downloading ASR model: $ASR_REPO (~2.5 GB)..."
-        local resp
-        resp=$(curl -sf -X POST "http://localhost:$DOWNLOAD_PORT/v1/models/download" \
+        curl -sf -X POST "http://localhost:$DOWNLOAD_PORT/v1/models/download" \
             -H "Content-Type: application/json" \
-            -d "{\"repo_id\": \"$ASR_REPO\"}" 2>&1) || {
-            warn "ASR download response: $resp"
-            die "Failed to download ASR model"
+            -d "{\"repo_id\": \"$ASR_REPO\"}" >/dev/null || {
+            kill "$tmp_pid" 2>/dev/null || true
+            die "Failed to request ASR model download"
         }
+        wait_for_model_deploy "$asr_path" "ASR" "$tmp_pid"
         ok "ASR model downloaded to $asr_path"
     else
         ok "ASR model already exists at $asr_path"
     fi
 
-    # Download TTS model
-    if [ ! -d "$tts_path" ]; then
+    # Download TTS model (async — poll for completion)
+    if [ ! -f "$tts_path/config.json" ]; then
+        rm -rf "$tts_path" 2>/dev/null || true
         info "Downloading TTS model: $TTS_REPO (~1.8 GB)..."
-        local resp
-        resp=$(curl -sf -X POST "http://localhost:$DOWNLOAD_PORT/v1/models/download" \
+        curl -sf -X POST "http://localhost:$DOWNLOAD_PORT/v1/models/download" \
             -H "Content-Type: application/json" \
-            -d "{\"repo_id\": \"$TTS_REPO\"}" 2>&1) || {
-            warn "TTS download response: $resp"
-            die "Failed to download TTS model"
+            -d "{\"repo_id\": \"$TTS_REPO\"}" >/dev/null || {
+            kill "$tmp_pid" 2>/dev/null || true
+            die "Failed to request TTS model download"
         }
+        wait_for_model_deploy "$tts_path" "TTS" "$tmp_pid"
         ok "TTS model downloaded to $tts_path"
     else
         ok "TTS model already exists at $tts_path"

@@ -178,6 +178,56 @@ install_server() {
     fi
 }
 
+# ── Wait for async model download ────────────────────────────────────
+wait_for_model() {
+    local model_path="$1" label="$2" server_pid="$3"
+    local elapsed=0
+    local timeout=600  # 10 minutes max per model
+    local last_size=0
+
+    while [ $elapsed -lt $timeout ]; do
+        # Check if server is still alive
+        if ! kill -0 "$server_pid" 2>/dev/null; then
+            die "$label download failed — server exited unexpectedly"
+        fi
+
+        # Check for model.safetensors or sharded weights as completion indicator
+        if [ -f "$model_path/config.json" ]; then
+            local has_weights=false
+            if [ -f "$model_path/model.safetensors" ]; then
+                has_weights=true
+            elif [ -f "$model_path/model.safetensors.index.json" ]; then
+                # Sharded model — check if all shards are present
+                local expected actual
+                expected=$(grep -o '"model-[^"]*"' "$model_path/model.safetensors.index.json" 2>/dev/null | sort -u | wc -l)
+                actual=$(ls "$model_path"/model-*.safetensors 2>/dev/null | wc -l)
+                if [ "$actual" -ge "$expected" ] && [ "$expected" -gt 0 ]; then
+                    has_weights=true
+                fi
+            fi
+
+            if $has_weights; then
+                return 0
+            fi
+        fi
+
+        # Show progress
+        if [ -d "$model_path" ]; then
+            local cur_size
+            cur_size=$(du -sm "$model_path" 2>/dev/null | awk '{print $1}')
+            if [ "${cur_size:-0}" != "$last_size" ]; then
+                printf "  ... %s MB downloaded\r" "${cur_size:-0}"
+                last_size="${cur_size:-0}"
+            fi
+        fi
+
+        sleep 5
+        elapsed=$((elapsed + 5))
+    done
+
+    die "$label model download timed out after ${timeout}s"
+}
+
 # ── Download Models ──────────────────────────────────────────────────
 download_models() {
     mkdir -p "$MODELS_DIR"
@@ -185,7 +235,7 @@ download_models() {
     local asr_path="$MODELS_DIR/$ASR_MODEL_NAME"
     local tts_path="$MODELS_DIR/$TTS_MODEL_NAME"
 
-    if [ -d "$asr_path" ] && [ -d "$tts_path" ]; then
+    if [ -f "$asr_path/config.json" ] && [ -f "$tts_path/config.json" ]; then
         ok "Models already downloaded:"
         echo "    ASR: $asr_path"
         echo "    TTS: $tts_path"
@@ -213,36 +263,42 @@ download_models() {
     done
 
     # Download ASR
-    if [ ! -d "$asr_path" ]; then
+    if [ ! -f "$asr_path/config.json" ]; then
+        rm -rf "$asr_path" 2>/dev/null || true
         info "Downloading ASR model: $ASR_REPO (~2.5 GB)..."
         info "This may take several minutes..."
         curl -sf -X POST "http://localhost:$DOWNLOAD_PORT/v1/models/download" \
             -H "Content-Type: application/json" \
             -d "{\"repo_id\": \"$ASR_REPO\"}" >/dev/null || {
             kill "$tmp_pid" 2>/dev/null || true
-            die "Failed to download ASR model"
+            die "Failed to request ASR model download"
         }
-        ok "ASR model downloaded"
+        # Poll until model files appear (download is async)
+        wait_for_model "$asr_path" "ASR" "$tmp_pid"
+        ok "ASR model downloaded to $asr_path"
     else
-        ok "ASR model already exists"
+        ok "ASR model already exists at $asr_path"
     fi
 
     # Download TTS
-    if [ ! -d "$tts_path" ]; then
+    if [ ! -f "$tts_path/config.json" ]; then
+        rm -rf "$tts_path" 2>/dev/null || true
         info "Downloading TTS model: $TTS_REPO (~1.8 GB)..."
         info "This may take several minutes..."
         curl -sf -X POST "http://localhost:$DOWNLOAD_PORT/v1/models/download" \
             -H "Content-Type: application/json" \
             -d "{\"repo_id\": \"$TTS_REPO\"}" >/dev/null || {
             kill "$tmp_pid" 2>/dev/null || true
-            die "Failed to download TTS model"
+            die "Failed to request TTS model download"
         }
-        ok "TTS model downloaded"
+        wait_for_model "$tts_path" "TTS" "$tmp_pid"
+        ok "TTS model downloaded to $tts_path"
     else
-        ok "TTS model already exists"
+        ok "TTS model already exists at $tts_path"
     fi
 
     # Stop temporary server
+    info "Stopping temporary server..."
     kill "$tmp_pid" 2>/dev/null || true
     wait "$tmp_pid" 2>/dev/null || true
     ok "Model download complete"
