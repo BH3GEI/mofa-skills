@@ -1,11 +1,8 @@
 ---
 name: mofa-video
 description: "AI-generated animated video cards with BGM. Triggers: video card, animated card, 动态贺卡, mofa video, animate card, video greeting. Pipeline: Gemini image gen → Veo animation → ffmpeg compositing → MP4 with background music."
-requires_bins:
-  - mofa
-  - ffmpeg
-requires_env:
-  - GEMINI_API_KEY
+requires_bins: mofa, ffmpeg
+requires_env: GEMINI_API_KEY
 ---
 
 # mofa-video

@@ -1,10 +1,8 @@
 ---
 name: mofa-infographic
 description: "AI-generated infographics and visual posters. Triggers: infographic, poster, 信息图, 海报, data poster, visual summary, mofa infographic. Generates multi-section infographic via Gemini with optional Qwen-Edit refinement, stitched into a single tall image."
-requires_bins:
-  - mofa
-requires_env:
-  - GEMINI_API_KEY
+requires_bins: mofa
+requires_env: GEMINI_API_KEY
 ---
 
 # mofa-infographic
