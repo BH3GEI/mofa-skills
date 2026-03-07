@@ -13,6 +13,31 @@ CLI: `mofa cards`
 Styles: `mofa-cards/styles/*.toml`
 Config: `mofa/config.json`
 
+## Interaction Guide
+
+Before generating, gather preferences interactively. On Telegram, use inline keyboard buttons:
+
+1. **Occasion** — What is the card for? (New Year, birthday, thank you, etc.)
+2. **Style** — Recommend based on occasion:
+   - Chinese New Year → `cny-guochao` (festive) or `cny-shuimo` (elegant)
+   - Tea culture / warm art → `feng-zikai`
+   - Folk wisdom / humor → `laoshu`
+   - Heritage / botanical → `lingnan`
+   - Buddhist / healing → `xianer`
+   - Modern / web → `web`
+3. **Number of cards** — Typically 1-3 (front, greeting, scene)
+4. **Aspect ratio** — Portrait `9:16` (default), square `1:1`, landscape `16:9`
+5. **API key** — Check if GEMINI_API_KEY is configured. If not, ask the user to provide it.
+
+**Telegram inline keyboard example:**
+```json
+message(content="Choose a card style:", metadata={"inline_keyboard": [
+  [{"text": "国潮 cny-guochao", "callback_data": "style:cny-guochao"}, {"text": "水墨 cny-shuimo", "callback_data": "style:cny-shuimo"}],
+  [{"text": "丰子恺 feng-zikai", "callback_data": "style:feng-zikai"}, {"text": "岭南 lingnan", "callback_data": "style:lingnan"}]
+]})
+```
+User's button press arrives as `[callback] style:cny-guochao`.
+
 ## Quick Start
 
 ```bash

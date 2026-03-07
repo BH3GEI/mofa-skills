@@ -16,6 +16,30 @@ Card styles: `mofa-cards/styles/*.toml` (image generation)
 Config: `mofa/config.json`
 BGM: `mofa/bgm-cny.mp3`, `mofa/bgm-chinese.mp3`
 
+## Interaction Guide
+
+Before generating, gather preferences interactively. On Telegram, use inline keyboard buttons:
+
+1. **Scene/content** — What should the video card depict?
+2. **Card style** — Uses mofa-cards styles for image generation (see mofa-cards for options)
+3. **Animation style** — Recommend based on mood:
+   - Meditative / peaceful → `shuimo`
+   - Festive / celebration → `festive`
+   - Romantic / dreamy → `gentle`
+   - Energetic / lively → `dynamic`
+4. **Background music** — Ask if they want BGM (available: bgm-cny.mp3, bgm-chinese.mp3)
+5. **Number of scenes** — Typically 1-3 for a video card
+6. **API key** — Check if GEMINI_API_KEY is configured. If not, ask the user to provide it. Also requires `ffmpeg` installed.
+
+**Telegram inline keyboard example:**
+```json
+message(content="Choose animation style:", metadata={"inline_keyboard": [
+  [{"text": "水墨 shuimo", "callback_data": "anim:shuimo"}, {"text": "喜庆 festive", "callback_data": "anim:festive"}],
+  [{"text": "温柔 gentle", "callback_data": "anim:gentle"}, {"text": "动感 dynamic", "callback_data": "anim:dynamic"}]
+]})
+```
+User's button press arrives as `[callback] anim:shuimo`.
+
 ## Quick Start
 
 ```bash

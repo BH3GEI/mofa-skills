@@ -15,6 +15,33 @@ CLI: `mofa slides` | Styles: `mofa-slides/styles/*.toml` | Config: `mofa/config.
 mofa slides --style nb-pro --out deck.pptx --slide-dir /tmp/slides -i slides.json
 ```
 
+## Interaction Guide
+
+Before generating, gather preferences interactively. On Telegram, use inline keyboard buttons when possible:
+
+1. **Topic/content** — Ask what the presentation is about
+2. **Style** — Recommend based on content, show options:
+   - Business/corporate → `agentic-enterprise-red` or `nb-pro`
+   - Academic/research → `what-is-life`
+   - Creative/artsy → `fengzikai` or `lingnan`
+   - Tech/startup → `nb-br` or `dark-community`
+   - Product launch → `vlinka-dji`
+   - Conference/summit → `gobi`
+3. **Number of slides** — Suggest 5-8 for a pitch, 10-15 for a full deck
+4. **Resolution** — Default 2K; suggest 4K for print or large screens
+5. **API keys** — Check if GEMINI_API_KEY is configured. If not, ask the user to provide it. This is required for image generation.
+
+Present a slide plan (titles + variants) for confirmation before generating.
+
+**Telegram inline keyboard example** for style selection:
+```json
+message(content="Choose a style:", metadata={"inline_keyboard": [
+  [{"text": "商务 nb-pro", "callback_data": "style:nb-pro"}, {"text": "科幻 nb-br", "callback_data": "style:nb-br"}],
+  [{"text": "学术 what-is-life", "callback_data": "style:what-is-life"}, {"text": "国潮 fengzikai", "callback_data": "style:fengzikai"}]
+]})
+```
+User's button press arrives as `[callback] style:nb-pro`.
+
 ## Modes
 
 | User says | Mode | What happens |
@@ -24,6 +51,8 @@ mofa slides --style nb-pro --out deck.pptx --slide-dir /tmp/slides -i slides.jso
 | "把PDF转成**可编辑**PPT" | **PDF-to-PPTX** | Use existing page images as `source_image` + `--auto-layout`. OCR extracts text, removes it, overlays editable boxes. |
 
 **Rule: add `--auto-layout` only when user says "可编辑" or "editable".**
+
+> ⚠️ **Editable mode (`--auto-layout`) is experimental.** It requires DASHSCOPE_API_KEY and involves multiple refinement passes (text extraction, removal, overlay). Results may need manual adjustment. Recommended for advanced users only.
 
 ## Styles (17)
 

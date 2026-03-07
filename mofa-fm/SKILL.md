@@ -10,6 +10,27 @@ always: false
 
 Voice management and text-to-speech with custom voice cloning support via OminiX-MLX on Apple Silicon.
 
+## Interaction Guide
+
+Before generating speech, gather preferences interactively. On Telegram, use inline keyboard buttons:
+
+1. **Text** — What should be spoken?
+2. **Voice** — List available voices, let user pick:
+   - Call `fm_voice_list` first to show preset + custom voices
+   - Recommend based on language/gender preference
+3. **Language** — chinese, english, japanese, korean
+4. **Custom voice** — If user wants their own voice, ask them to send a 3-10s audio clip
+
+**Telegram inline keyboard example:**
+```json
+message(content="Choose a voice:", metadata={"inline_keyboard": [
+  [{"text": "Vivian", "callback_data": "voice:vivian"}, {"text": "Ryan", "callback_data": "voice:ryan"}],
+  [{"text": "Serena", "callback_data": "voice:serena"}, {"text": "Aiden", "callback_data": "voice:aiden"}],
+  [{"text": "🎤 Use my voice", "callback_data": "voice:custom"}]
+]})
+```
+User's button press arrives as `[callback] voice:vivian`.
+
 ## Features
 
 - **Text-to-Speech** with preset or custom voices

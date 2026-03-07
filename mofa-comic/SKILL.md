@@ -13,6 +13,30 @@ CLI: `mofa comic`
 Styles: `mofa-comic/styles/*.toml`
 Config: `mofa/config.json`
 
+## Interaction Guide
+
+Before generating, gather preferences interactively. On Telegram, use inline keyboard buttons:
+
+1. **Story/topic** — What should the comic be about?
+2. **Style** — Recommend based on content:
+   - Tech humor → `xkcd`
+   - Action / drama → `manga`
+   - Adventure / editorial → `ligne-claire`
+   - Bold / advertising → `pop-art`
+   - Serious / dark → `graphic-novel`
+3. **Number of panels** — Typically 3-4 for a strip, up to 6-8 for longer stories
+4. **Layout** — Horizontal strip (default), vertical scroll, or grid
+5. **API key** — Check if GEMINI_API_KEY is configured. If not, ask the user to provide it.
+
+**Telegram inline keyboard example:**
+```json
+message(content="Choose a comic style:", metadata={"inline_keyboard": [
+  [{"text": "xkcd", "callback_data": "style:xkcd"}, {"text": "manga", "callback_data": "style:manga"}],
+  [{"text": "ligne-claire", "callback_data": "style:ligne-claire"}, {"text": "pop-art", "callback_data": "style:pop-art"}]
+]})
+```
+User's button press arrives as `[callback] style:xkcd`.
+
 ## Quick Start
 
 ```bash
