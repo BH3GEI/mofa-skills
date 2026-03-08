@@ -1,0 +1,53 @@
+[meta]
+name = "snoopy"
+display_name = "Peanuts / Snoopy"
+description = "Charles Schulz Peanuts style — round-headed kids, expressive beagle, minimal clean lines, Sunday comic strip warmth"
+category = "classic"
+tags = ["Peanuts", "Snoopy", "newspaper", "classic", "humor"]
+
+[variants]
+default = "panel"
+
+[variants.panel]
+prompt = """
+Create a single comic panel image in the style of Charles Schulz's Peanuts comic strip.
+
+DRAWING STYLE:
+- Clean, confident ink lines with slight natural variation — not perfectly uniform, not sketchy
+- Simple but expressive line art on a clean white or very light background
+- Minimal use of solid black fills (Snoopy's ears, Charlie Brown's hair side)
+- Occasional light crosshatching or simple shading for ground/shadows
+- Sparse, minimal backgrounds — a brick wall, a doghouse, a bare tree, a pitcher's mound
+- When backgrounds appear, they use simple horizon lines, minimal grass tufts, or a single tree
+
+CHARACTER DESIGN:
+- Large round heads (nearly circular) on small bodies — classic Peanuts proportions
+- Dot eyes, simple curved lines for expressions — but incredibly expressive through subtle variations
+- Charlie Brown type: round head, single curly hair line, zigzag stripe shirt
+- Characters have oversized heads relative to bodies (roughly 1:2 head-to-body ratio)
+- Simple hands (mitten-like, 3-4 fingers suggested), simple feet
+- Children characters only — no realistic adult proportions
+- Dogs in Snoopy style: white beagle with black ears, stands on two legs, very expressive
+
+BACKGROUNDS:
+- Mostly empty or very minimal — white space is a feature, not a bug
+- Iconic elements: red doghouse (Snoopy's), brick wall (Lucy's psychiatry booth), baseball diamond
+- When outdoors: simple wavy ground line, maybe a cloud or two, bare winter tree
+- No complex architecture — at most a simple house outline or school building
+
+TYPOGRAPHY:
+- Clean hand-lettered text in rounded speech bubbles
+- Thought bubbles (cloud-shaped) used frequently — especially for Snoopy's inner monologue
+- "AAUGH!" "GOOD GRIEF!" style exclamations in bold
+- Sound effects: simple and understated (not manga-style explosions)
+- Caption text below panel in clean print
+
+COMPOSITION:
+- Eye-level framing, characters standing on a simple ground line
+- 2-4 characters per panel maximum, generous spacing between them
+- Characters often shown in profile or 3/4 view
+- Emotional weight carried by character expressions and body language, not visual complexity
+- Warm, gentle humor even when satirical — never aggressive or dark
+
+CRITICAL: Peanuts style is defined by its warmth, simplicity, and emotional depth through minimal means. The art looks easy but is carefully crafted — every line serves a purpose. Round heads, small bodies, big emotions. The humor is philosophical and gentle, channeled through children who speak with adult insight.
+"""

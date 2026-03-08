@@ -155,7 +155,7 @@ Adding a new style is as simple as dropping a `.toml` file into the appropriate 
 
 | Role | Default | Used By |
 |------|---------|---------|
-| Image generation | `gemini-3-pro-image-preview` | All visual skills |
+| Image generation | `gemini-3.1-flash-image-preview` | All visual skills |
 | Vision QA | `gemini-2.5-flash` | autoLayout text extraction |
 | Image editing | `qwen-image-edit-max-2026-01-16` | Text removal refinement |
 

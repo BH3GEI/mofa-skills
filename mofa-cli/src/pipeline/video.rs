@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::config::MofaConfig;
-use crate::gemini::GeminiClient;
+use crate::gemini::{BatchImageRequest, GeminiClient};
 use crate::style::Style;
 use crate::veo::VeoClient;
 use eyre::Result;
@@ -157,53 +157,28 @@ fn animate_card(
     Ok(out_path.to_path_buf())
 }
 
-/// Video card pipeline: generate PNG cards → animate each → MP4 with BGM.
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
-pub fn run(
+#[allow(clippy::too_many_arguments)]
+fn gen_video_images_sync(
+    gemini: &GeminiClient,
     card_dir: &Path,
     cards: &[VideoCardInput],
     style: &Style,
-    anim_style: &Style,
-    cfg: &MofaConfig,
+    total: usize,
+    model: &str,
+    ar: &str,
+    size: Option<&str>,
     concurrency: usize,
-    aspect_ratio: Option<&str>,
-    image_size: Option<&str>,
-    bgm_path: Option<&Path>,
-    still_duration: f64,
-    crossfade_dur: f64,
-    fade_out_dur: f64,
-    music_volume: f64,
-    music_fade_in: f64,
-) -> Result<(Vec<Option<PathBuf>>, Vec<Option<PathBuf>>)> {
-    let gemini_key = cfg
-        .gemini_key()
-        .ok_or_else(|| eyre::eyre!("Gemini API key required"))?;
-    let gemini = GeminiClient::new(gemini_key.clone());
-    let veo = VeoClient::new(gemini_key);
-
-    std::fs::create_dir_all(card_dir)?;
-    let total = cards.len();
-    let ar = aspect_ratio.unwrap_or("9:16");
-    let size = image_size.or(
-        cfg.defaults
-            .cards
-            .as_ref()
-            .and_then(|c| c.image_size.as_deref()),
-    );
-    let model = cfg.gen_model();
-
-    // Phase 1: Generate all card images in parallel
-    eprintln!("\n=== Phase 1: Generating {total} card images ===");
+) -> Vec<Option<PathBuf>> {
     let img_paths: Arc<Mutex<Vec<Option<PathBuf>>>> =
         Arc::new(Mutex::new(vec![None; total]));
 
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(concurrency)
-        .build()?;
+        .build()
+        .unwrap();
 
     pool.scope(|s| {
         for (idx, card) in cards.iter().enumerate() {
-            let gemini = &gemini;
             let img_paths = Arc::clone(&img_paths);
 
             s.spawn(move |_| {
@@ -227,7 +202,76 @@ pub fn run(
         }
     });
 
-    let img_paths_vec = img_paths.lock().unwrap().clone();
+    let result = img_paths.lock().unwrap().clone();
+    result
+}
+
+/// Video card pipeline: generate PNG cards → animate each → MP4 with BGM.
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub fn run(
+    card_dir: &Path,
+    cards: &[VideoCardInput],
+    style: &Style,
+    anim_style: &Style,
+    cfg: &MofaConfig,
+    concurrency: usize,
+    aspect_ratio: Option<&str>,
+    image_size: Option<&str>,
+    bgm_path: Option<&Path>,
+    still_duration: f64,
+    crossfade_dur: f64,
+    fade_out_dur: f64,
+    music_volume: f64,
+    music_fade_in: f64,
+    batch: bool,
+) -> Result<(Vec<Option<PathBuf>>, Vec<Option<PathBuf>>)> {
+    let gemini_key = cfg
+        .gemini_key()
+        .ok_or_else(|| eyre::eyre!("Gemini API key required"))?;
+    let gemini = GeminiClient::new(gemini_key.clone());
+    let veo = VeoClient::new(gemini_key);
+
+    std::fs::create_dir_all(card_dir)?;
+    let total = cards.len();
+    let ar = aspect_ratio.unwrap_or("9:16");
+    let size = image_size.or(
+        cfg.defaults
+            .cards
+            .as_ref()
+            .and_then(|c| c.image_size.as_deref()),
+    );
+    let model = cfg.gen_model();
+
+    // Phase 1: Generate all card images
+    eprintln!("\n=== Phase 1: Generating {total} card images ===");
+
+    let img_paths_vec = if batch {
+        let requests: Vec<BatchImageRequest> = cards
+            .iter()
+            .map(|card| {
+                let variant = card.style.as_deref().unwrap_or("front");
+                let prefix = style.get_prompt(variant);
+                BatchImageRequest {
+                    key: card.name.clone(),
+                    prompt: format!("{prefix}\n\n{}", card.prompt),
+                    out_file: card_dir.join(format!("card-{}.png", card.name)),
+                    image_size: size.map(String::from),
+                    aspect_ratio: Some(ar.to_string()),
+                    ref_images: vec![],
+                    model: model.to_string(),
+                }
+            })
+            .collect();
+        match gemini.batch_gen_images(requests) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("Batch failed ({e}), falling back to parallel sync...");
+                gen_video_images_sync(&gemini, card_dir, cards, style, total, model, ar, size, concurrency)
+            }
+        }
+    } else {
+        gen_video_images_sync(&gemini, card_dir, cards, style, total, model, ar, size, concurrency)
+    };
 
     // Phase 2: Animate each card (sequential — Veo has rate limits)
     eprintln!("\n=== Phase 2: Animating {total} cards ===");

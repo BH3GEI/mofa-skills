@@ -366,7 +366,7 @@ Or per-slide in JSON:
 { "prompt": "...", "gen_model": "gemini-2.5-pro-preview" }
 ```
 
-Default: `gemini-3-pro-image-preview`
+Default: `gemini-3.1-flash-image-preview`
 
 ### Concurrency
 
@@ -668,7 +668,7 @@ Different slides can use different generation models:
 ```json
 [
   { "prompt": "Simple text slide", "gen_model": "gemini-2.5-flash" },
-  { "prompt": "Complex data visualization", "gen_model": "gemini-3-pro-image-preview" }
+  { "prompt": "Complex data visualization", "gen_model": "gemini-3.1-flash-image-preview" }
 ]
 ```
 
@@ -713,7 +713,7 @@ mofa slides --root /path/to/mofa-skills --style nb-pro --out deck.pptx --slide-d
   "auto_layout": true,
   "images": ["/path/to/ref1.png", "/path/to/ref2.png"],
   "source_image": "/path/to/existing-image.png",
-  "gen_model": "gemini-3-pro-image-preview",
+  "gen_model": "gemini-3.1-flash-image-preview",
   "texts": [
     {
       "text": "Plain text with\nline breaks",
@@ -768,7 +768,7 @@ mofa slides [OPTIONS] -o <OUT> --slide-dir <DIR>
 | `--auto-layout` | | `false` | Enable editable text mode |
 | `--concurrency` | | `5` | Parallel generation (1-20) |
 | `--image-size` | | config | `1K` / `2K` / `4K` |
-| `--gen-model` | | `gemini-3-pro-image-preview` | Image generation model |
+| `--gen-model` | | `gemini-3.1-flash-image-preview` | Image generation model |
 | `--ref-image-size` | | same as image-size | Reference image resolution (editable mode) |
 | `--vision-model` | | `gemini-2.5-flash` | Text extraction model (editable mode) |
 | `--refine` | | `false` | Use Qwen-Edit for text removal |
@@ -786,7 +786,7 @@ mofa slides [OPTIONS] -o <OUT> --slide-dir <DIR>
     "gemini": "env:GEMINI_API_KEY",
     "dashscope": "env:DASHSCOPE_API_KEY"
   },
-  "gen_model": "gemini-3-pro-image-preview",
+  "gen_model": "gemini-3.1-flash-image-preview",
   "vision_model": "gemini-2.5-flash",
   "edit_model": "qwen-image-edit-max-2026-01-16",
   "deepseek_ocr_url": "http://localhost:8080/v1/ocr",

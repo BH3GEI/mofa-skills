@@ -81,12 +81,21 @@ User's button press arrives as `[callback] style:nb-pro`.
 
 Set per-slide variant via JSON `"style"` field (e.g. `"style": "cover"`). Defaults to `"normal"`.
 
+## API Modes
+
+| `--api` | Speed | Cost | How it works |
+|---------|-------|------|--------------|
+| `rt` (default) | Fast (~2-4 min for 10 slides) | Standard pricing | Parallel sync calls via rayon thread pool |
+| `batch` | Slow (5-30 min) | **50% cheaper** | Gemini Batch API, async processing. Falls back to `rt` on timeout. |
+
+Use `--api batch` for large decks (15+ slides) where cost matters more than speed.
+
 ## Resolution & Quality
 
 | Flag | Values | Description |
 |------|--------|-------------|
 | `--image-size` | `1K`, `2K`, `4K` | Image resolution. Higher = sharper but slower. |
-| `--gen-model` | model name | Generation model (default: `gemini-3-pro-image-preview`) |
+| `--gen-model` | model name | Generation model (default: `gemini-3.1-flash-image-preview`) |
 | `--ref-image-size` | `1K`, `2K` | Lower-res for autoLayout reference image (faster Phase 1) |
 | `--vision-model` | model name | Text extraction model (default: `gemini-2.5-flash`) |
 | `--concurrency` | 1-20 | Parallel slide generation (default: 5) |
@@ -238,10 +247,11 @@ mofa slides --auto-layout --style nb-pro --out editable.pptx --slide-dir /tmp/ed
 | `--auto-layout` | false | Enable editable text mode for ALL slides |
 | `--concurrency` | 5 | Parallel generation (1-20) |
 | `--image-size` | config | `"1K"` / `"2K"` / `"4K"` |
-| `--gen-model` | gemini-3-pro-image-preview | Image generation model |
+| `--gen-model` | gemini-3.1-flash-image-preview | Image generation model |
 | `--ref-image-size` | same as image-size | Lower-res for autoLayout reference (faster) |
 | `--vision-model` | gemini-2.5-flash | Vision model for text extraction |
 | `--refine` | false | Use Qwen-Edit for text removal (cleaner, needs DASHSCOPE_API_KEY) |
+| `--api` | `rt` | API mode: `rt` (realtime, fast parallel) or `batch` (50% cheaper, async 5-30 min) |
 | `--root` | auto-detected | Path to mofa root directory |
 
 ## Config
@@ -254,7 +264,7 @@ mofa slides --auto-layout --style nb-pro --out editable.pptx --slide-dir /tmp/ed
     "gemini": "env:GEMINI_API_KEY",
     "dashscope": "env:DASHSCOPE_API_KEY"
   },
-  "gen_model": "gemini-3-pro-image-preview",
+  "gen_model": "gemini-3.1-flash-image-preview",
   "vision_model": "gemini-2.5-flash",
   "defaults": {
     "slides": { "style": "nb-pro", "image_size": "2K", "concurrency": 5 }

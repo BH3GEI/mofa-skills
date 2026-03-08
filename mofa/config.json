@@ -10,7 +10,7 @@
     "comic": { "style": "xkcd", "panels": 3, "refine_with_qwen": false },
     "infographic": { "style": "cyberpunk-neon", "panels": 3, "refine_with_qwen": true }
   },
-  "gen_model": "gemini-3-pro-image-preview",
+  "gen_model": "gemini-3.1-flash-image-preview",
   "vision_model": "gemini-2.5-flash",
   "edit_model": "qwen-image-edit-max-2026-01-16"
 }

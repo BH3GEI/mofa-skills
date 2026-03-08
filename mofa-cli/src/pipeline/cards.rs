@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::config::MofaConfig;
-use crate::gemini::GeminiClient;
+use crate::gemini::{BatchImageRequest, GeminiClient};
 use crate::style::Style;
 use eyre::Result;
 use serde::Deserialize;
@@ -27,6 +27,7 @@ pub fn run(
     aspect_ratio: Option<&str>,
     image_size: Option<&str>,
     gen_model: Option<&str>,
+    batch: bool,
 ) -> Result<Vec<Option<PathBuf>>> {
     let gemini_key = cfg
         .gemini_key()
@@ -50,18 +51,62 @@ pub fn run(
     );
     let model = gen_model.unwrap_or(cfg.gen_model());
 
-    eprintln!("Generating {total} cards ({concurrency} parallel, {ar})...");
+    eprintln!("Generating {total} cards ({}{ar})...", if batch { "batch, " } else { &format!("{concurrency} parallel, ") });
 
+    let result = if batch {
+        let requests: Vec<BatchImageRequest> = cards
+            .iter()
+            .map(|card| {
+                let variant = card.style.as_deref().unwrap_or("front");
+                let prefix = style.get_prompt(variant);
+                BatchImageRequest {
+                    key: card.name.clone(),
+                    prompt: format!("{prefix}\n\n{}", card.prompt),
+                    out_file: card_dir.join(format!("card-{}.png", card.name)),
+                    image_size: size.map(String::from),
+                    aspect_ratio: Some(ar.to_string()),
+                    ref_images: vec![],
+                    model: model.to_string(),
+                }
+            })
+            .collect();
+        match gemini.batch_gen_images(requests) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("Batch failed ({e}), falling back to parallel sync...");
+                gen_cards_sync(&gemini, card_dir, cards, style, total, model, ar, size, concurrency)
+            }
+        }
+    } else {
+        gen_cards_sync(&gemini, card_dir, cards, style, total, model, ar, size, concurrency)
+    };
+
+    let ok = result.iter().filter(|p| p.is_some()).count();
+    eprintln!("\nDone: {ok}/{total} cards in {}/", card_dir.display());
+    Ok(result)
+}
+
+fn gen_cards_sync(
+    gemini: &GeminiClient,
+    card_dir: &Path,
+    cards: &[CardInput],
+    style: &Style,
+    total: usize,
+    model: &str,
+    ar: &str,
+    size: Option<&str>,
+    concurrency: usize,
+) -> Vec<Option<PathBuf>> {
     let paths: Arc<Mutex<Vec<Option<PathBuf>>>> =
         Arc::new(Mutex::new(vec![None; total]));
 
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(concurrency)
-        .build()?;
+        .build()
+        .unwrap();
 
     pool.scope(|s| {
         for (idx, card) in cards.iter().enumerate() {
-            let gemini = &gemini;
             let paths = Arc::clone(&paths);
 
             s.spawn(move |_| {
@@ -86,7 +131,5 @@ pub fn run(
     });
 
     let result = paths.lock().unwrap().clone();
-    let ok = result.iter().filter(|p| p.is_some()).count();
-    eprintln!("\nDone: {ok}/{total} cards in {}/", card_dir.display());
-    Ok(result)
+    result
 }

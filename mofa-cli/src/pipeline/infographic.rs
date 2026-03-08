@@ -2,7 +2,7 @@
 
 use crate::config::MofaConfig;
 use crate::dashscope::DashscopeClient;
-use crate::gemini::GeminiClient;
+use crate::gemini::{BatchImageRequest, GeminiClient};
 use crate::image_util;
 use crate::style::Style;
 use eyre::Result;
@@ -16,6 +16,61 @@ pub struct SectionInput {
     pub prompt: String,
     pub refine_prompt: Option<String>,
     pub variant: Option<String>,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn gen_sections_sync(
+    gemini: &GeminiClient,
+    out_dir: &Path,
+    sections: &[SectionInput],
+    style: &Style,
+    total: usize,
+    model: &str,
+    ar: &str,
+    image_size: Option<&str>,
+    concurrency: usize,
+) -> Vec<Option<PathBuf>> {
+    let paths: Arc<Mutex<Vec<Option<PathBuf>>>> =
+        Arc::new(Mutex::new(vec![None; total]));
+
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(concurrency)
+        .build()
+        .unwrap();
+
+    pool.scope(|s| {
+        for (idx, section) in sections.iter().enumerate() {
+            let paths = Arc::clone(&paths);
+
+            s.spawn(move |_| {
+                let variant = section.variant.as_deref().unwrap_or_else(|| {
+                    if idx == 0 { "header" } else if idx == total - 1 { "footer" } else { "normal" }
+                });
+                let prefix = style.get_prompt(variant);
+                let full_prompt = format!(
+                    "{prefix}\n\nSection {} of {total}:\n{}",
+                    idx + 1, section.prompt
+                );
+                let padded = format!("{:02}", idx + 1);
+                let out_path = out_dir.join(format!("section-{padded}.png"));
+
+                if let Ok(Some(p)) = gemini.gen_image(
+                    &full_prompt,
+                    &out_path,
+                    image_size,
+                    Some(ar),
+                    &[],
+                    Some(model),
+                    Some(&format!("Section {}", idx + 1)),
+                ) {
+                    paths.lock().unwrap()[idx] = Some(p);
+                }
+            });
+        }
+    });
+
+    let result = paths.lock().unwrap().clone();
+    result
 }
 
 /// Infographic pipeline: generate sections, optional Qwen refinement, vertical stitch.
@@ -32,6 +87,7 @@ pub fn run(
     refine_with_qwen: bool,
     gutter: u32,
     gen_model: Option<&str>,
+    batch: bool,
 ) -> Result<Option<PathBuf>> {
     let gemini_key = cfg
         .gemini_key()
@@ -45,55 +101,38 @@ pub fn run(
 
     eprintln!("Generating {total}-section infographic...");
 
-    // Phase 1: Generate sections in parallel
-    let section_paths: Arc<Mutex<Vec<Option<PathBuf>>>> =
-        Arc::new(Mutex::new(vec![None; total]));
-
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(concurrency)
-        .build()?;
-
-    pool.scope(|s| {
-        for (idx, section) in sections.iter().enumerate() {
-            let gemini = &gemini;
-            let section_paths = Arc::clone(&section_paths);
-
-            s.spawn(move |_| {
-                // Auto variant: header / normal / footer
+    // Phase 1: Generate sections
+    let mut section_paths_vec: Vec<Option<PathBuf>> = if batch {
+        let requests: Vec<BatchImageRequest> = sections
+            .iter()
+            .enumerate()
+            .map(|(idx, section)| {
                 let variant = section.variant.as_deref().unwrap_or_else(|| {
-                    if idx == 0 {
-                        "header"
-                    } else if idx == total - 1 {
-                        "footer"
-                    } else {
-                        "normal"
-                    }
+                    if idx == 0 { "header" } else if idx == total - 1 { "footer" } else { "normal" }
                 });
                 let prefix = style.get_prompt(variant);
-                let full_prompt = format!(
-                    "{prefix}\n\nSection {} of {total}:\n{}",
-                    idx + 1,
-                    section.prompt
-                );
                 let padded = format!("{:02}", idx + 1);
-                let out_path = out_dir.join(format!("section-{padded}.png"));
-
-                if let Ok(Some(p)) = gemini.gen_image(
-                    &full_prompt,
-                    &out_path,
-                    image_size,
-                    Some(ar),
-                    &[],
-                    Some(model),
-                    Some(&format!("Section {}", idx + 1)),
-                ) {
-                    section_paths.lock().unwrap()[idx] = Some(p);
+                BatchImageRequest {
+                    key: format!("section-{padded}"),
+                    prompt: format!("{prefix}\n\nSection {} of {total}:\n{}", idx + 1, section.prompt),
+                    out_file: out_dir.join(format!("section-{padded}.png")),
+                    image_size: image_size.map(String::from),
+                    aspect_ratio: Some(ar.to_string()),
+                    ref_images: vec![],
+                    model: model.to_string(),
                 }
-            });
+            })
+            .collect();
+        match gemini.batch_gen_images(requests) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("Batch failed ({e}), falling back to parallel sync...");
+                gen_sections_sync(&gemini, out_dir, sections, style, total, model, ar, image_size, concurrency)
+            }
         }
-    });
-
-    let mut section_paths_vec: Vec<Option<PathBuf>> = section_paths.lock().unwrap().clone();
+    } else {
+        gen_sections_sync(&gemini, out_dir, sections, style, total, model, ar, image_size, concurrency)
+    };
 
     // Phase 2: Optional Qwen-Edit refinement (sequential)
     if refine_with_qwen {

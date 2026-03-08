@@ -16,7 +16,11 @@ pub struct MofaConfig {
     pub gen_model: Option<String>,
     pub vision_model: Option<String>,
     pub edit_model: Option<String>,
-    /// Local DeepSeek-OCR-2 endpoint URL (e.g. "http://localhost:8080/v1/ocr")
+    /// OCR endpoint URL for grounded text extraction (e.g. "http://localhost:8080/v1/ocr").
+    /// When set, auto-layout uses OCR+VQA mode (precise bounding boxes from OCR + font styling from VQA).
+    /// When absent, falls back to VQA-only mode.
+    pub ocr_url: Option<String>,
+    /// Legacy alias for ocr_url.
     pub deepseek_ocr_url: Option<String>,
 }
 
@@ -116,7 +120,7 @@ impl MofaConfig {
     }
 
     pub fn gen_model(&self) -> &str {
-        self.gen_model.as_deref().unwrap_or("gemini-3-pro-image-preview")
+        self.gen_model.as_deref().unwrap_or("gemini-3.1-flash-image-preview")
     }
 
     pub fn vision_model(&self) -> &str {
@@ -127,12 +131,18 @@ impl MofaConfig {
         self.edit_model.as_deref().unwrap_or("qwen-image-edit-max-2026-01-16")
     }
 
-    /// Resolve the DeepSeek-OCR-2 endpoint URL from config or env.
-    pub fn deepseek_ocr_url(&self) -> Option<String> {
+    /// Resolve the OCR endpoint URL from config or env.
+    /// Checks `ocr_url` first, then legacy `deepseek_ocr_url`, then env vars.
+    pub fn ocr_url(&self) -> Option<String> {
+        if let Some(ref url) = self.ocr_url {
+            return Some(resolve_key(url).unwrap_or_else(|| url.clone()));
+        }
         if let Some(ref url) = self.deepseek_ocr_url {
             return Some(resolve_key(url).unwrap_or_else(|| url.clone()));
         }
-        std::env::var("DEEPSEEK_OCR_URL").ok()
+        std::env::var("OCR_URL")
+            .or_else(|_| std::env::var("DEEPSEEK_OCR_URL"))
+            .ok()
     }
 }
 

@@ -4,6 +4,17 @@ use eyre::{bail, Result};
 use image::RgbaImage;
 use std::path::Path;
 
+/// Open an image, guessing format from content (not extension).
+fn open_image(p: &Path) -> Result<image::DynamicImage> {
+    let reader = image::io::Reader::open(p)
+        .map_err(|e| eyre::eyre!("opening {}: {e}", p.display()))?
+        .with_guessed_format()
+        .map_err(|e| eyre::eyre!("guessing format {}: {e}", p.display()))?;
+    reader
+        .decode()
+        .map_err(|e| eyre::eyre!("decoding {}: {e}", p.display()))
+}
+
 /// Stitch images horizontally with a gutter between them.
 pub fn stitch_horizontal(paths: &[&Path], gutter: u32, out_file: &Path) -> Result<()> {
     if paths.is_empty() {
@@ -12,7 +23,7 @@ pub fn stitch_horizontal(paths: &[&Path], gutter: u32, out_file: &Path) -> Resul
 
     let images: Vec<image::DynamicImage> = paths
         .iter()
-        .map(|p| image::open(p).map_err(|e| eyre::eyre!("opening {}: {e}", p.display())))
+        .map(|p| open_image(p))
         .collect::<Result<Vec<_>>>()?;
 
     // Target height = max height among all images
@@ -53,7 +64,7 @@ pub fn stitch_vertical(paths: &[&Path], gutter: u32, out_file: &Path) -> Result<
 
     let images: Vec<image::DynamicImage> = paths
         .iter()
-        .map(|p| image::open(p).map_err(|e| eyre::eyre!("opening {}: {e}", p.display())))
+        .map(|p| open_image(p))
         .collect::<Result<Vec<_>>>()?;
 
     // Target width = max width among all images
@@ -97,7 +108,7 @@ pub fn stitch_grid(paths: &[&Path], gutter: u32, out_file: &Path) -> Result<()> 
 
     let images: Vec<image::DynamicImage> = paths
         .iter()
-        .map(|p| image::open(p).map_err(|e| eyre::eyre!("opening {}: {e}", p.display())))
+        .map(|p| open_image(p))
         .collect::<Result<Vec<_>>>()?;
 
     // Find max cell dimensions

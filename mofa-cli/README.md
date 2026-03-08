@@ -243,7 +243,7 @@ Reads `mofa/config.json` from the mofa root directory:
     "gemini": "env:GEMINI_API_KEY",
     "dashscope": "env:DASHSCOPE_API_KEY"
   },
-  "gen_model": "gemini-3-pro-image-preview",
+  "gen_model": "gemini-3.1-flash-image-preview",
   "vision_model": "gemini-2.5-flash",
   "edit_model": "qwen-image-edit-max-2026-01-16",
   "deepseek_ocr_url": "http://localhost:8080/v1/ocr",
@@ -267,7 +267,7 @@ Use `"env:VAR_NAME"` in config.json to reference environment variables. Never co
 
 | Config key | Default | Used for |
 |-----------|---------|----------|
-| `gen_model` | `gemini-3-pro-image-preview` | Image generation |
+| `gen_model` | `gemini-3.1-flash-image-preview` | Image generation |
 | `vision_model` | `gemini-2.5-flash` | VQA text extraction (autoLayout) |
 | `edit_model` | `qwen-image-edit-max-2026-01-16` | Qwen-Edit refinement |
 | `deepseek_ocr_url` | *(none)* | Local DeepSeek-OCR-2 for precise text positions |

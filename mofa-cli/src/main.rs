@@ -11,10 +11,19 @@ mod pptx;
 mod style;
 mod veo;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use eyre::Result;
 use std::io::Read;
 use std::path::PathBuf;
+
+/// Gemini API mode for image generation.
+#[derive(Clone, Debug, ValueEnum)]
+enum ApiMode {
+    /// Realtime: parallel sync calls, fast (~2-3 min)
+    Rt,
+    /// Batch API: 50% cheaper, async (may take 5-30 min)
+    Batch,
+}
 
 #[derive(Parser)]
 #[command(name = "mofa", about = "AI-powered content generation CLI")]
@@ -61,6 +70,9 @@ enum Commands {
         /// Use Qwen-Edit to remove text from reference images (cleaner output)
         #[arg(long)]
         refine: bool,
+        /// API mode: rt (realtime, default) or batch (50% cheaper, async)
+        #[arg(long, value_enum, default_value = "rt")]
+        api: ApiMode,
         /// Input JSON file (or stdin if omitted)
         #[arg(long, short)]
         input: Option<PathBuf>,
@@ -82,6 +94,9 @@ enum Commands {
         /// Image size: 1K, 2K, 4K
         #[arg(long)]
         image_size: Option<String>,
+        /// API mode: rt (realtime, default) or batch (50% cheaper, async)
+        #[arg(long, value_enum, default_value = "rt")]
+        api: ApiMode,
         /// Input JSON file (or stdin)
         #[arg(long, short)]
         input: Option<PathBuf>,
@@ -112,6 +127,9 @@ enum Commands {
         /// Gap between panels in pixels
         #[arg(long, default_value = "20")]
         gutter: u32,
+        /// API mode: rt (realtime, default) or batch (50% cheaper, async)
+        #[arg(long, value_enum, default_value = "rt")]
+        api: ApiMode,
         /// Input JSON file (or stdin)
         #[arg(long, short)]
         input: Option<PathBuf>,
@@ -142,6 +160,9 @@ enum Commands {
         /// Gap between sections in pixels
         #[arg(long, default_value = "0")]
         gutter: u32,
+        /// API mode: rt (realtime, default) or batch (50% cheaper, async)
+        #[arg(long, value_enum, default_value = "rt")]
+        api: ApiMode,
         /// Input JSON file (or stdin)
         #[arg(long, short)]
         input: Option<PathBuf>,
@@ -184,6 +205,9 @@ enum Commands {
         /// Music fade in duration (seconds)
         #[arg(long, default_value = "2.0")]
         music_fade_in: f64,
+        /// API mode: rt (realtime, default) or batch (50% cheaper, async)
+        #[arg(long, value_enum, default_value = "rt")]
+        api: ApiMode,
         /// Input JSON file (or stdin)
         #[arg(long, short)]
         input: Option<PathBuf>,
@@ -294,9 +318,10 @@ fn plugin_slides(
 
     std::fs::create_dir_all(&slide_dir).ok();
 
+    let batch = args.get("api").and_then(|v| v.as_str()).unwrap_or("rt") == "batch";
     pipeline::slides::run(
         &slide_dir, &out, &slides, &loaded_style, cfg,
-        concurrency, image_size, gen_model, ref_image_size, vision_model, refine,
+        concurrency, image_size, gen_model, ref_image_size, vision_model, refine, batch,
     )?;
 
     Ok(format!("Generated PPTX: {}", out.display()))
@@ -325,9 +350,10 @@ fn plugin_cards(
 
     std::fs::create_dir_all(&card_dir).ok();
 
+    let batch = args.get("api").and_then(|v| v.as_str()).unwrap_or("rt") == "batch";
     pipeline::cards::run(
         &card_dir, &cards, &loaded_style, cfg,
-        concurrency, aspect, image_size, None,
+        concurrency, aspect, image_size, None, batch,
     )?;
 
     Ok(format!("Generated {} card(s) in {}", cards.len(), card_dir.display()))
@@ -361,9 +387,10 @@ fn plugin_comic(
 
     std::fs::create_dir_all(&work_dir).ok();
 
+    let batch = args.get("api").and_then(|v| v.as_str()).unwrap_or("rt") == "batch";
     pipeline::comic::run(
         &work_dir, &out, &panels, &loaded_style, cfg,
-        layout, concurrency, image_size, refine, gutter, None,
+        layout, concurrency, image_size, refine, gutter, None, batch,
     )?;
 
     Ok(format!("Generated comic: {}", out.display()))
@@ -397,9 +424,10 @@ fn plugin_infographic(
 
     std::fs::create_dir_all(&work_dir).ok();
 
+    let batch = args.get("api").and_then(|v| v.as_str()).unwrap_or("rt") == "batch";
     pipeline::infographic::run(
         &work_dir, &out, &sections, &loaded_style, cfg,
-        concurrency, image_size, aspect, refine, gutter, None,
+        concurrency, image_size, aspect, refine, gutter, None, batch,
     )?;
 
     Ok(format!("Generated infographic: {}", out.display()))
@@ -441,10 +469,11 @@ fn plugin_video(
 
     std::fs::create_dir_all(&card_dir).ok();
 
+    let batch = args.get("api").and_then(|v| v.as_str()).unwrap_or("rt") == "batch";
     pipeline::video::run(
         &card_dir, &cards, &img_style, &anim_style, cfg,
         concurrency, Some(aspect), image_size, bgm, still_duration,
-        crossfade_dur, fade_out_dur, music_volume, music_fade_in,
+        crossfade_dur, fade_out_dur, music_volume, music_fade_in, batch,
     )?;
 
     Ok(format!("Generated {} video card(s) in {}", cards.len(), card_dir.display()))
@@ -476,6 +505,7 @@ fn main() -> Result<()> {
             vision_model,
             auto_layout,
             refine,
+            api,
             input,
         } => {
             let styles_dir = find_styles_dir(&mofa_root, "slides");
@@ -504,6 +534,7 @@ fn main() -> Result<()> {
                 ref_image_size.as_deref(),
                 vision_model.as_deref(),
                 refine,
+                matches!(api, ApiMode::Batch),
             )?;
         }
         Commands::Cards {
@@ -512,6 +543,7 @@ fn main() -> Result<()> {
             aspect,
             concurrency,
             image_size,
+            api,
             input,
         } => {
             let styles_dir = find_styles_dir(&mofa_root, "cards");
@@ -530,6 +562,7 @@ fn main() -> Result<()> {
                 aspect.as_deref(),
                 image_size.as_deref(),
                 None,
+                matches!(api, ApiMode::Batch),
             )?;
         }
         Commands::Comic {
@@ -541,6 +574,7 @@ fn main() -> Result<()> {
             image_size,
             refine,
             gutter,
+            api,
             input,
         } => {
             let styles_dir = find_styles_dir(&mofa_root, "comic");
@@ -566,6 +600,7 @@ fn main() -> Result<()> {
                 refine,
                 gutter,
                 None,
+                matches!(api, ApiMode::Batch),
             )?;
         }
         Commands::Infographic {
@@ -577,6 +612,7 @@ fn main() -> Result<()> {
             aspect,
             refine,
             gutter,
+            api,
             input,
         } => {
             let styles_dir = find_styles_dir(&mofa_root, "infographic");
@@ -603,6 +639,7 @@ fn main() -> Result<()> {
                 refine,
                 gutter,
                 None,
+                matches!(api, ApiMode::Batch),
             )?;
         }
         Commands::Video {
@@ -618,6 +655,7 @@ fn main() -> Result<()> {
             fade_out_dur,
             music_volume,
             music_fade_in,
+            api,
             input,
         } => {
             let styles_dir = find_styles_dir(&mofa_root, "video");
@@ -649,6 +687,7 @@ fn main() -> Result<()> {
                 fade_out_dur,
                 music_volume,
                 music_fade_in,
+                matches!(api, ApiMode::Batch),
             )?;
         }
     }

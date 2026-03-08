@@ -79,6 +79,7 @@ Each card: `{ name, prompt, style? }`. Style is the variant within the TOML file
 | `--aspect` | `9:16` | `"9:16"` / `"3:4"` / `"1:1"` / `"16:9"` |
 | `--concurrency` | 5 | Parallel workers |
 | `--image-size` | - | `"1K"` / `"2K"` / `"4K"` |
+| `--api` | `rt` | API mode: `rt` (realtime, fast parallel) or `batch` (50% cheaper, async 5-30 min) |
 | `-i` / `--input` | stdin | Input JSON file |
 
 ## Config
