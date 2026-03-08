@@ -42,7 +42,8 @@
           "auto_layout": { "type": "boolean", "description": "Enable editable text mode for ALL slides" },
           "concurrency": { "type": "integer", "description": "Parallel generation limit (default: 5)" },
           "image_size": { "type": "string", "description": "Image size: 1K, 2K, 4K" },
-          "refine": { "type": "boolean", "description": "Use Qwen-Edit for text cleanup" }
+          "refine": { "type": "boolean", "description": "Use Qwen-Edit for text cleanup" },
+          "api": { "type": "string", "description": "API mode: rt (realtime, fast) or batch (50% cheaper, async)", "default": "rt", "enum": ["rt", "batch"] }
         },
         "required": ["slides", "out"]
       }

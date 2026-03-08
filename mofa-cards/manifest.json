@@ -38,7 +38,8 @@
           "card_dir": { "type": "string", "description": "Output directory for card PNGs" },
           "aspect": { "type": "string", "description": "Aspect ratio" },
           "concurrency": { "type": "integer", "description": "Parallel generation limit (default: 5)" },
-          "image_size": { "type": "string", "description": "Image size: 1K, 2K, 4K" }
+          "image_size": { "type": "string", "description": "Image size: 1K, 2K, 4K" },
+          "api": { "type": "string", "description": "API mode: rt (realtime, fast) or batch (50% cheaper, async)", "default": "rt", "enum": ["rt", "batch"] }
         },
         "required": ["cards", "card_dir"]
       }

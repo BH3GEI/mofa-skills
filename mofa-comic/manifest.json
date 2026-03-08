@@ -40,7 +40,8 @@
           "layout": { "type": "string", "description": "Layout: horizontal, vertical, grid", "default": "horizontal" },
           "concurrency": { "type": "integer", "description": "Parallel generation limit (default: 3)" },
           "gutter": { "type": "integer", "description": "Gap between panels in pixels (default: 20)" },
-          "refine": { "type": "boolean", "description": "Refine panels with Qwen-Edit" }
+          "refine": { "type": "boolean", "description": "Refine panels with Qwen-Edit" },
+          "api": { "type": "string", "description": "API mode: rt (realtime, fast) or batch (50% cheaper, async)", "default": "rt", "enum": ["rt", "batch"] }
         },
         "required": ["panels", "out"]
       }

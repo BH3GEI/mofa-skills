@@ -39,7 +39,8 @@
           "card_dir": { "type": "string", "description": "Output directory for PNGs and MP4s" },
           "bgm": { "type": "string", "description": "Background music file path" },
           "aspect": { "type": "string", "description": "Aspect ratio (default: 9:16)", "default": "9:16" },
-          "concurrency": { "type": "integer", "description": "Parallel generation limit (default: 3)" }
+          "concurrency": { "type": "integer", "description": "Parallel generation limit (default: 3)" },
+          "api": { "type": "string", "description": "API mode: rt (realtime, fast) or batch (50% cheaper, async)", "default": "rt", "enum": ["rt", "batch"] }
         },
         "required": ["cards", "card_dir"]
       }

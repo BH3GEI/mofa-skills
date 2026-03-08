@@ -40,7 +40,8 @@
           "concurrency": { "type": "integer", "description": "Parallel generation limit (default: 3)" },
           "aspect": { "type": "string", "description": "Aspect ratio per section" },
           "gutter": { "type": "integer", "description": "Gap between sections in pixels (default: 0)" },
-          "refine": { "type": "boolean", "description": "Refine sections with Qwen-Edit" }
+          "refine": { "type": "boolean", "description": "Refine sections with Qwen-Edit" },
+          "api": { "type": "string", "description": "API mode: rt (realtime, fast) or batch (50% cheaper, async)", "default": "rt", "enum": ["rt", "batch"] }
         },
         "required": ["sections", "out"]
       }
