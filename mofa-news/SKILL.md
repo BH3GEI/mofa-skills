@@ -1,96 +1,71 @@
 ---
-name: mofa-news
-description: "News digest — fetch headlines from multiple sources, deep-read top articles, synthesize a structured briefing. Triggers: news, news digest, 新闻, 新闻简报, daily briefing, what's happening, 今日要闻"
-requires_bins: [curl]
-requires_env: []
+name: news
+description: Fetch news headlines and synthesize structured briefings from multiple sources.
+requires_bins: curl
+requires_env: GEMINI_API_KEY
 ---
 
-# mofa-news
+# News Digest
 
-Aggregates news from multiple sources (Google News RSS, Hacker News API, Yahoo News), deep-fetches top articles for full content, and produces a structured digest.
+Aggregate news from RSS feeds and APIs, then synthesize structured briefings.
 
-## Categories
+## Trigger Phrases
 
-| Category | Sources | Deep-fetch limit |
-|----------|---------|-----------------|
-| politics | Google News, Yahoo News | 3 |
-| world | Google News, Yahoo News | 3 |
-| business | Google News, Yahoo News | 3 |
-| technology | Google News, Hacker News, Substack, Medium, Yahoo News | 10 |
-| science | Google News, Yahoo News | 3 |
-| entertainment | Google News, Yahoo News | 2 |
-| health | Google News, Yahoo News | 2 |
-| sports | Google News, Yahoo News | 2 |
+- "今天有什么新闻"
+- "科技新闻简报"
+- "daily briefing"
+- "news digest"
+- " headlines"
+- "今日要闻"
 
-## Usage
+## Workflow
 
-Basic news digest (defaults to technology + world):
-
-```
-Fetch today's tech news and give me a briefing.
-```
-
-Specific category:
-
-```
-Give me a news digest on politics and business.
-```
-
-Full daily briefing:
-
-```
-Generate a comprehensive daily news briefing across all categories.
-```
-
-## How it works
-
-1. **Discover** — Fetch RSS feeds and API endpoints for selected categories
-2. **Rank** — Deduplicate by title similarity, rank by source credibility and recency
-3. **Deep-fetch** — For top N articles per category, fetch full page content via `web_fetch`
-4. **Synthesize** — LLM produces a structured digest with key takeaways per category
+1. **Fetch** headlines via `web_fetch` or `curl`
+2. **Rank** by recency and source credibility
+3. **Deep-read** top articles via `web_fetch`
+4. **Synthesize** structured digest with `write_file`
 
 ## RSS Sources
 
-### Google News
+| Category | URL |
+|----------|-----|
+| Tech | `https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0FtVnVHZ0pWVXlnQVAB?hl=en-US` |
+| World | `https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtVnVHZ0pWVXlnQVAB?hl=en-US` |
+| HN | `https://hacker-news.firebaseio.com/v0/topstories.json` |
+
+## Example Usage
 
 ```bash
-curl -s "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en"
+# Fetch Google News tech feed
+curl -s "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0FtVnVHZ0pWVXlnQVAB?hl=en-US"
+
+# Fetch HN top stories
+curl -s "https://hacker-news.firebaseio.com/v0/topstories.json" | head -10
 ```
 
-### Hacker News
+## Output Format
 
-```bash
-curl -s "https://hacker-news.firebaseio.com/v0/topstories.json" | jq '.[0:30]'
-```
-
-Per-story detail: `https://hacker-news.firebaseio.com/v0/item/{id}.json`
-
-### Yahoo News
-
-Fetch HTML and extract headlines:
-
-```bash
-curl -s "https://news.yahoo.com/technology/"
-```
-
-## Output format
+Save to `news-digest-YYYY-MM-DD.md`:
 
 ```markdown
-# Daily News Digest — YYYY-MM-DD
+# News Digest — 2026-03-11
 
 ## Technology
-- **Headline 1** — 2-sentence summary. [Source](url)
-- **Headline 2** — 2-sentence summary. [Source](url)
+- **Headline** — Summary [Source](url)
+- **Headline 2** — Summary [Source](url)
+
 Key takeaway: ...
 
 ## World
 ...
 ```
 
-## Integration with mofa-research
+## Deep Research Integration
 
-For deeper analysis on a specific news story, pipe a headline into mofa-research:
+For deeper analysis on a story, use `web_search` then `read_file` on results.
 
-```
-run_pipeline(pipeline="mofa-research/deep_research", input="<headline from news digest>")
-```
+## Tips
+
+- Google News RSS returns XML; use `grep` or `sed` to extract `<title>` and `<link>`
+- HN API returns story IDs; fetch details at `v0/item/{id}.json`
+- Cache results to avoid rate limits

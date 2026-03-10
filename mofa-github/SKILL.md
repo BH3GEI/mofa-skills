@@ -1,121 +1,95 @@
 ---
-name: mofa-github
-description: "Interact with GitHub using the gh CLI — issues, PRs, CI runs, API queries, release management. Triggers: github, gh, pull request, issue, CI, workflow, 代码审查"
-requires_bins: [gh]
-requires_env: []
+name: github
+description: Interact with GitHub using the gh CLI for issues, PRs, CI runs, and API queries.
+requires_bins: gh
 ---
 
-# mofa-github
+# GitHub CLI (gh)
 
-Use the `gh` CLI to interact with GitHub. Always specify `--repo owner/repo` when not in a git directory, or use URLs directly.
+Use the `gh` command-line tool for GitHub operations.
+
+## Trigger Phrases
+
+Activate this skill when user says:
+- "查一下 PR"
+- "看一下 issue"
+- "GitHub 上怎么样"
+- "CI 状态"
+- "创建 PR"
+- "提交 issue"
+- "review 代码"
+- "merge PR"
+- "release 版本"
 
 ## Pull Requests
 
-Check CI status on a PR:
-
 ```bash
-gh pr checks 55 --repo owner/repo
-```
+# List open PRs
+gh pr list
 
-List open PRs:
+# View PR details
+gh pr view 123
 
-```bash
-gh pr list --repo owner/repo --limit 10
-```
+# Check PR status (CI, reviews)
+gh pr checks 123
 
-View PR details:
+# Create a PR
+gh pr create --title "feat: add feature" --body "Description here"
 
-```bash
-gh pr view 55 --repo owner/repo
-```
-
-Create a PR:
-
-```bash
-gh pr create --title "feat: add feature" --body "Description" --repo owner/repo
+# Merge a PR
+gh pr merge 123 --squash
 ```
 
 ## Issues
 
-List open issues:
-
 ```bash
-gh issue list --repo owner/repo --limit 10
+# List issues
+gh issue list
+
+# View issue
+gh issue view 42
+
+# Create issue
+gh issue create --title "Bug: crash on startup" --body "Steps to reproduce..."
+
+# Close issue
+gh issue close 42
 ```
 
-Create an issue:
+## CI/CD Runs
 
 ```bash
-gh issue create --title "Bug: description" --body "Steps to reproduce..." --repo owner/repo
+# List recent workflow runs
+gh run list
+
+# View run details
+gh run view 12345
+
+# Watch a running workflow
+gh run watch 12345
+
+# Re-run failed jobs
+gh run rerun 12345 --failed
 ```
 
-## CI / Workflow Runs
-
-List recent workflow runs:
+## API Queries
 
 ```bash
-gh run list --repo owner/repo --limit 10
+# Get repo info
+gh api repos/{owner}/{repo}
+
+# List releases
+gh api repos/{owner}/{repo}/releases --jq '.[0].tag_name'
+
+# Search code
+gh api search/code -f q='filename:Cargo.toml org:myorg' --jq '.items[].repository.full_name'
+
+# GraphQL query
+gh api graphql -f query='{ viewer { login } }'
 ```
 
-View a specific run:
+## Tips
 
-```bash
-gh run view <run-id> --repo owner/repo
-```
-
-View logs for failed steps only:
-
-```bash
-gh run view <run-id> --repo owner/repo --log-failed
-```
-
-Watch a run in progress:
-
-```bash
-gh run watch <run-id> --repo owner/repo
-```
-
-## API for Advanced Queries
-
-The `gh api` command accesses any GitHub REST or GraphQL endpoint:
-
-```bash
-gh api repos/owner/repo/pulls/55 --jq '.title, .state, .user.login'
-```
-
-List PR review comments:
-
-```bash
-gh api repos/owner/repo/pulls/55/comments --jq '.[].body'
-```
-
-## JSON Output
-
-Most commands support `--json` for structured output with `--jq` filtering:
-
-```bash
-gh issue list --repo owner/repo --json number,title --jq '.[] | "\(.number): \(.title)"'
-```
-
-## Releases
-
-Create a release:
-
-```bash
-gh release create v1.0.0 --title "v1.0.0" --notes "Release notes" --repo owner/repo
-```
-
-List releases:
-
-```bash
-gh release list --repo owner/repo
-```
-
-## Install
-
-```bash
-brew install gh        # macOS
-sudo apt install gh    # Ubuntu/Debian
-```
-
-Then authenticate: `gh auth login`
+- Use `--json` flag for machine-readable output
+- Pipe to `jq` for filtering: `gh pr list --json number,title | jq '.[].title'`
+- Set `GH_TOKEN` env var for authentication in CI

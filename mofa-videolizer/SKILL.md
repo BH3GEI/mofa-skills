@@ -1,50 +1,83 @@
 ---
-name: mofa-videolizer
-description: "Generate SRT subtitles from text + audio. Supports Whisper (word-level timestamps) and basic fallback mode. Triggers: subtitle, subtitles, 字幕, SRT, 字幕生成, generate subtitles"
-requires_bins: [python3]
-requires_env: []
+name: videolizer
+description: Generate SRT subtitles from text and audio using Whisper or basic timing.
+requires_bins: python3,ffmpeg
+requires_env: GEMINI_API_KEY
 ---
 
-# mofa-videolizer
+# Subtitle Generator
 
-Subtitle generator for video production. Produces `.srt` files from script text + audio, designed to work with mofa-video and mofa-fm outputs.
+Generate `.srt` subtitle files from script text + audio.
+
+## Trigger Phrases
+
+- "生成字幕"
+- "subtitle generation"
+- "SRT file"
+- "add subtitles"
+- "字幕文件"
+- "转字幕"
+
+## Requirements
+
+```bash
+# Required
+pip install moviepy
+
+# Optional (better quality)
+pip install openai-whisper
+```
 
 ## Modes
 
-- **Whisper** (when `openai-whisper` is installed): word-level timestamps, 3-word groups, high accuracy
-- **Basic** (fallback): spreads words evenly across audio duration, 4-word groups. Requires `moviepy`
+| Mode | Tool | Quality |
+|------|------|---------|
+| whisper | `openai-whisper` | Word-level timestamps, high accuracy |
+| basic | `moviepy` | Even distribution, fallback |
 
-Graceful fallback: if Whisper is missing or fails, uses basic mode instead of crashing.
+Auto-detection: uses whisper if installed, falls back to basic mode.
 
 ## Usage
 
 ```bash
+# Generate subtitles
 python3 -m videolizer subtitles --text script.txt --audio voice.wav --out subs.srt
+
+# Or manually with whisper
+whisper voice.wav --output_format srt --output_dir ./
+
+# Or basic mode (estimate timing from audio duration)
+python3 -c "
+from moviepy.editor import AudioFileClip
+audio = AudioFileClip('voice.wav')
+duration = audio.duration
+print(f'Audio duration: {duration}s')
+"
 ```
 
-## Integration with mofa pipeline
+## Workflow
 
-Typical workflow combining mofa-fm + mofa-videolizer + mofa-video:
+1. **Write script** text file
+2. **Generate audio** via TTS or recording
+3. **Generate subtitles** with this skill
+4. **Burn subtitles** into video with `ffmpeg`:
 
-1. Write script text
-2. `fm_tts` to generate voice audio (mofa-fm)
-3. `videolizer subtitles` to generate `.srt` from text + audio
-4. `mofa_video` to produce final video with subtitles
+```bash
+ffmpeg -i video.mp4 -vf "subtitles=subs.srt" -c:a copy output.mp4
+```
 
 ## Environment Variables
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `VIDEOLIZER_SUBTITLES_MODE` | `auto` | `auto` / `whisper` / `basic` |
-| `VIDEOLIZER_SUBTITLES_WHISPER_MODEL` | `base` | Whisper model size |
-| `VIDEOLIZER_SUBTITLES_WHISPER_GROUP_WORDS` | `3` | Words per subtitle group (Whisper) |
-| `VIDEOLIZER_SUBTITLES_WORDS_PER_GROUP` | `4` | Words per subtitle group (basic) |
-| `VIDEOLIZER_SUBTITLES_TIMING_OFFSET` | `0.0` | Shift all subtitles by N seconds |
-| `VIDEOLIZER_SUBTITLES_OVERLAP` | `0.05` | Overlap between segments (seconds) |
+| `VIDEOLIZER_MODE` | `auto` | `auto` / `whisper` / `basic` |
+| `WHISPER_MODEL` | `base` | Whisper model size |
+| `WORDS_PER_GROUP` | `3` | Words per subtitle entry |
 
-## Install
+## Fallback Behavior
 
-```bash
-pip install moviepy              # basic mode
-pip install openai-whisper       # whisper mode (optional, better quality)
-```
+If whisper fails:
+1. Log warning
+2. Switch to basic mode
+3. Spread words evenly across audio duration
+4. Never crash — always produce a valid SRT
