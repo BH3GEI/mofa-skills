@@ -102,16 +102,25 @@ fn extract_image_from_parts(parts: &[Value]) -> Option<Vec<u8>> {
     None
 }
 
+/// Default Gemini API base URL.
+const DEFAULT_BASE_URL: &str = "https://generativelanguage.googleapis.com/v1beta";
+
 /// Gemini API client for image generation and vision QA.
 pub struct GeminiClient {
     api_key: String,
+    base_url: String,
     http: reqwest::blocking::Client,
 }
 
 impl GeminiClient {
     pub fn new(api_key: String) -> Self {
+        let base_url = std::env::var("GEMINI_BASE_URL")
+            .unwrap_or_else(|_| DEFAULT_BASE_URL.to_string())
+            .trim_end_matches('/')
+            .to_string();
         Self {
             api_key,
+            base_url,
             http: reqwest::blocking::Client::builder()
                 .timeout(std::time::Duration::from_secs(120))
                 .build()
@@ -153,8 +162,8 @@ impl GeminiClient {
         let parts = build_content_parts_borrowed(prompt, ref_images)?;
 
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={}",
-            self.api_key
+            "{}/models/{model}:generateContent?key={}",
+            self.base_url, self.api_key
         );
 
         let body = json!({
@@ -253,7 +262,8 @@ impl GeminiClient {
                 .collect::<Result<Vec<_>>>()?;
 
             let url = format!(
-                "https://generativelanguage.googleapis.com/v1beta/models/{model}:batchGenerateContent"
+                "{}/models/{model}:batchGenerateContent",
+                self.base_url
             );
 
             let body = json!({
@@ -306,8 +316,8 @@ impl GeminiClient {
                 elapsed += interval as u64;
 
                 let poll_url = format!(
-                    "https://generativelanguage.googleapis.com/v1beta/{batch_name}?key={}",
-                    self.api_key
+                    "{}/{batch_name}?key={}",
+                    self.base_url, self.api_key
                 );
                 let poll_resp = self
                     .http
@@ -405,8 +415,8 @@ impl GeminiClient {
         };
 
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={}",
-            self.api_key
+            "{}/models/{model}:generateContent?key={}",
+            self.base_url, self.api_key
         );
 
         let body = json!({

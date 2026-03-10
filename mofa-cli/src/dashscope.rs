@@ -101,16 +101,24 @@ fn sample_border_color(
     image::Rgb([rs[mid], gs[mid], bs[mid]])
 }
 
+/// Default Dashscope API base URL.
+const DEFAULT_DASHSCOPE_URL: &str =
+    "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation";
+
 /// Dashscope API client for Qwen image editing.
 pub struct DashscopeClient {
     api_key: String,
+    endpoint: String,
     http: reqwest::blocking::Client,
 }
 
 impl DashscopeClient {
     pub fn new(api_key: String) -> Self {
+        let endpoint = std::env::var("DASHSCOPE_BASE_URL")
+            .unwrap_or_else(|_| DEFAULT_DASHSCOPE_URL.to_string());
         Self {
             api_key,
+            endpoint,
             http: reqwest::blocking::Client::builder()
                 .timeout(std::time::Duration::from_secs(300))
                 .build()
@@ -183,7 +191,7 @@ impl DashscopeClient {
 
             let resp = self
                 .http
-                .post("https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation")
+                .post(&self.endpoint)
                 .header("Authorization", format!("Bearer {}", self.api_key))
                 .header("Content-Type", "application/json")
                 .json(&body)
@@ -261,7 +269,7 @@ impl DashscopeClient {
         for attempt in 0..=max_retries {
             let resp = self
                 .http
-                .post("https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation")
+                .post(&self.endpoint)
                 .header("Authorization", format!("Bearer {}", self.api_key))
                 .header("Content-Type", "application/json")
                 .json(&body)

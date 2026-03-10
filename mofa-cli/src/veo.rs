@@ -7,16 +7,25 @@ use std::path::Path;
 const POLL_INTERVAL_SECS: u64 = 10;
 const MAX_POLLS: usize = 120; // 20min timeout
 
+/// Default Gemini API base URL (shared with GeminiClient).
+const DEFAULT_BASE_URL: &str = "https://generativelanguage.googleapis.com/v1beta";
+
 /// Gemini Veo video generation client.
 pub struct VeoClient {
     api_key: String,
+    base_url: String,
     http: reqwest::blocking::Client,
 }
 
 impl VeoClient {
     pub fn new(api_key: String) -> Self {
+        let base_url = std::env::var("GEMINI_BASE_URL")
+            .unwrap_or_else(|_| DEFAULT_BASE_URL.to_string())
+            .trim_end_matches('/')
+            .to_string();
         Self {
             api_key,
+            base_url,
             http: reqwest::blocking::Client::builder()
                 .timeout(std::time::Duration::from_secs(60))
                 .build()
@@ -50,8 +59,8 @@ impl VeoClient {
 
         // Submit video generation
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateVideos?key={}",
-            self.api_key
+            "{}/models/{model}:generateVideos?key={}",
+            self.base_url, self.api_key
         );
 
         let body = json!({
@@ -80,8 +89,8 @@ impl VeoClient {
             std::thread::sleep(std::time::Duration::from_secs(POLL_INTERVAL_SECS));
 
             let poll_url = format!(
-                "https://generativelanguage.googleapis.com/v1beta/{}?key={}",
-                op_name, self.api_key
+                "{}/{}?key={}",
+                self.base_url, op_name, self.api_key
             );
             let poll_resp = self.http.get(&poll_url).send()?;
             operation = poll_resp.json()?;
