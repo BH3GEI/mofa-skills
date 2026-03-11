@@ -1,5 +1,24 @@
 # Deep Research Skill Configuration
 
+[search]
+# 搜索方法优先级: tavily | google | auto
+# auto = 先尝试 tavily，失败则 fallback 到 google
+primary_method = "auto"
+
+[tavily]
+# Tavily API 配置
+api_key_env = "TAVILY_API_KEY"
+search_depth = "basic"        # basic | advanced
+max_results = 10              # 每次搜索返回结果数
+include_answer = false        # 是否包含 AI 生成的答案
+include_raw_content = false   # 是否包含原始页面内容
+
+[google_fallback]
+# Google 搜索 fallback 配置
+search_url_template = "https://www.google.com/search?q={query}&num={num}"
+max_results = 10
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+
 [exploration]
 # 探索深度限制
 max_depth_links = 15          # 单个研究最多深入探索的链接数
@@ -30,8 +49,8 @@ stagnation_limit = 3          # 连续未发现新线索的最大次数
 
 [authority_domains]
 # 权威性评分映射 (0-1)
-high = [".gov", ".edu", "europa.eu", "un.org", "wikipedia.org"]
-medium = ["reuters.com", "bloomberg.com", "ft.com", "nytimes.com", "wsj.com", "nature.com", "ieee.org"]
+high = [".gov", ".edu", "europa.eu", "un.org", "wikipedia.org", "arxiv.org"]
+medium = ["reuters.com", "bloomberg.com", "ft.com", "nytimes.com", "wsj.com", "nature.com", "ieee.org", "techcrunch.com", "theverge.com"]
 low = ["medium.com", "substack.com", "blogspot.com", "wordpress.com"]
 
 [synthesis]

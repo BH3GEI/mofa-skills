@@ -1,14 +1,14 @@
 ---
 name: deep-research
-description: Iterative exploration-based deep research with human-like browsing behavior. Explores links depth-first, extracts knowledge incrementally, synthesizes with citations.
-requires_bins:
-requires_env:
+description: Iterative exploration-based deep research with Tavily search and fallback to web scraping. Human-like browsing with depth-first link following.
+requires_bins: curl
+requires_env: TAVILY_API_KEY
 always: false
 ---
 
 # Deep Research
 
-Human-like iterative research skill. Explores the web like a person: discover links, evaluate relevance, dive deep, follow trails, synthesize findings.
+Human-like iterative research skill. Explores the web depth-first: search → evaluate links → dive deep → follow trails → synthesize findings.
 
 ## Trigger Phrases
 
@@ -18,6 +18,7 @@ Human-like iterative research skill. Explores the web like a person: discover li
 - "帮我查查"
 - "research report"
 - "全面分析"
+- "查资料"
 
 ## Architecture
 
@@ -30,9 +31,12 @@ Entry Agent (分析意图，确定探索策略)
 │           EXPLORATION LOOP                  │
 │                                             │
 │  ┌─────────────┐    ┌─────────────────┐    │
-│  │ 发现线索     │◄───┤ 新链接/新子问题   │    │
-│  │ (web_search)│    │ (来自页面内容)    │    │
-│  └──────┬──────┘    └─────────────────┘    │
+│  │ 搜索发现     │◄───┤ 新链接/新子问题   │    │
+│  │             │    │ (来自页面内容)    │    │
+│  │ 1. Tavily   │    └─────────────────┘    │
+│  │ 2. Google   │                           │
+│  │    (fetch)  │                           │
+│  └──────┬──────┘                           │
 │         │                                   │
 │         ↓                                   │
 │  ┌─────────────┐    ┌─────────────┐        │
@@ -42,7 +46,7 @@ Entry Agent (分析意图，确定探索策略)
 │         │ 是                                │
 │         ↓                                   │
 │  ┌─────────────┐    ┌─────────────────┐    │
-│  │ 深入探索     │───►│ web_fetch/browser│    │
+│  │ 深入探索     │───►│ web_fetch        │    │
 │  │             │    │ 提取内容         │    │
 │  └──────┬──────┘    └─────────────────┘    │
 │         │                                   │
@@ -62,6 +66,58 @@ Entry Agent (分析意图，确定探索策略)
     Final Report (带完整引用链)
 ```
 
+## Search Methods
+
+### Method 1: Tavily Search (推荐)
+
+需要环境变量 `TAVILY_API_KEY`
+
+```bash
+# 使用 Tavily API 搜索
+curl -s "https://api.tavily.com/search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "api_key": "'"$TAVILY_API_KEY"'",
+    "query": "AI regulation 2026",
+    "search_depth": "basic",
+    "max_results": 10,
+    "include_answer": false
+  }'
+```
+
+### Method 2: Google via web_fetch (Fallback)
+
+当 Tavily 不可用时，抓取 Google 搜索结果页：
+
+```bash
+# 获取 Google 搜索结果 HTML
+# 注意：需要处理 anti-bot，可能需要重试
+web_fetch "https://www.google.com/search?q=AI+regulation+2026&num=10"
+```
+
+然后提取链接：
+```json
+{
+  "role": "user",
+  "content": "从以下 Google 搜索结果 HTML 中提取前 10 个链接的标题和 URL:\n\n[HTML content...]\n\n输出 JSON: [{\"title\": \"...\", \"url\": \"...\"}]"
+}
+```
+
+### Method 3: Direct URL (已知权威源)
+
+直接访问已知高质量来源：
+
+```bash
+# 学术论文
+web_fetch "https://arxiv.org/list/cs.AI/recent"
+
+# 技术博客
+web_fetch "https://blog.google/technology/ai/"
+
+# Hacker News
+web_fetch "https://news.ycombinator.com/"
+```
+
 ## Workflow
 
 ### Phase 1: Entry (意图分析)
@@ -73,42 +129,50 @@ Entry Agent (分析意图，确定探索策略)
 }
 ```
 
-### Phase 2: Discovery (线索发现)
+### Phase 2: Discovery (搜索发现)
+
+**首选 Tavily：**
 
 ```bash
-# 执行多个角度搜索
-web_search "AI regulation policy timeline 2026"
-web_search "EU AI Act implementation 2026"
-web_search "US federal AI legislation 2026"
+curl -s "https://api.tavily.com/search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "api_key": "'"$TAVILY_API_KEY"'",
+    "query": "AI regulation policy timeline 2026",
+    "search_depth": "basic",
+    "max_results": 10
+  }' | jq '.results[] | {title, url, content}'
+```
+
+**Tavily 失败时，fallback 到 Google：**
+
+```bash
+web_fetch "https://www.google.com/search?q=AI+regulation+2026&num=10"
+# 然后解析 HTML 提取链接
 ```
 
 ### Phase 3: Evaluate (价值评估)
 
-对每个搜索结果，LLM 评估：
-- **Relevance** (0-1): 与查询相关度
-- **Authority** (0-1): 来源权威性 (.gov > .edu > 知名媒体 > 博客)
-- **Novelty** (0-1): 是否提供新信息
-- **Depth Potential** (0-1): 是否值得深入挖掘
+对每个候选链接，LLM 评估：
 
 ```json
 {
   "role": "user",
-  "content": "评估以下链接的研究价值:\n\n标题: EU AI Act: What Businesses Need to Know\nURL: https://example.com/eu-ai-act\n摘要: The EU AI Act will be fully effective August 2026...\n\n输出 JSON: {\"relevance\": 0.95, \"authority\": 0.9, \"novelty\": 0.8, \"depth_potential\": 0.85, \"should_explore\": true}"
+  "content": "评估以下链接的研究价值:\n\n标题: EU AI Act: What Businesses Need to Know\nURL: https://example.com/eu-ai-act\n摘要: The EU AI Act will be fully effective August 2026...\n\n输出 JSON: {\"relevance\": 0.95, \"authority\": 0.9, \"novelty\": 0.8, \"should_explore\": true, \"reason\": \"...\"}'"
 }
 ```
 
 ### Phase 4: Explore (深入探索)
 
-对高分链接，使用 browser 工具模拟点击：
+对高分链接，获取完整内容：
 
 ```bash
 # 获取页面内容
 web_fetch "https://example.com/eu-ai-act"
 
-# 或使用 browser 工具交互式浏览
+# 如果页面需要交互，使用 browser 工具
 browser_navigate "https://example.com/eu-ai-act"
-browser_click "a[href*='timeline']"  # 点击时间线链接
-browser_read  # 读取当前页面内容
+browser_read
 ```
 
 ### Phase 5: Extract (知识提取)
@@ -118,7 +182,7 @@ browser_read  # 读取当前页面内容
 ```json
 {
   "role": "user",
-  "content": "从以下页面内容提取知识:\n\n[页面内容...]\n\n输出 JSON:\n{\n  \"facts\": [{\"claim\": \"...\", \"confidence\": \"high\", \"quote\": \"...\"}],\n  \"sources\": [{\"title\": \"...\", \"url\": \"...\", \"date\": \"2026-01-15\"}],\n  \"contradictions\": [{\"claim_a\": \"...\", \"claim_b\": \"...\"}],\n  \"follow_up_links\": [\"url1\", \"url2\"],\n  \"sub_questions\": [\"...\", \"...\"]\n}"
+  "content": "从以下页面内容提取知识:\n\n[页面内容...]\n\n输出 JSON:\n{\n  \"facts\": [{\"claim\": \"...\", \"confidence\": \"high\", \"quote\": \"...\"}],\n  \"sources\": [{\"title\": \"...\", \"url\": \"...\", \"date\": \"2026-01-15\"}],\n  \"contradictions\": [...],\n  \"follow_up_links\": [\"url1\", \"url2\"],\n  \"sub_questions\": [\"...\", \"...\"]\n}"
 }
 ```
 
@@ -180,7 +244,7 @@ browser_read  # 读取当前页面内容
     }
   ],
   "exploration_log": [
-    {"action": "search", "query": "...", "results_count": 10},
+    {"action": "tavily_search", "query": "...", "results_count": 10},
     {"action": "evaluate", "url": "...", "score": 0.9},
     {"action": "explore", "url": "...", "facts_extracted": 5},
     {"action": "follow_link", "from": "...", "to": "..."}
@@ -195,19 +259,46 @@ browser_read  # 读取当前页面内容
 - `max_iterations`: 探索循环次数上限
 - `score_threshold`: 评估通过分数
 - `min_facts`: 最少收集 facts 数
+- `search_method`: `tavily` | `google` | `auto`
 
 ## Tools Used
 
-- `web_search`: 发现初始线索
-- `web_fetch`: 获取页面内容
+- **Tavily API**: 高质量搜索结果 (需要 `TAVILY_API_KEY`)
+- `web_fetch`: 获取页面内容，或作为搜索 fallback
 - `browser_navigate/click/read`: 交互式浏览
 - `read_file/write_file`: KnowledgeBase 持久化
 - `message`: HITL 确认矛盾或不确定时
 
 ## Best Practices
 
-1. **优先权威源**: .gov, .edu, 知名媒体优先探索
-2. **追踪引用链**: 页面里的链接往往更有价值
-3. **记录探索路径**: 方便回溯和验证
-4. **标记不确定性**: 低 confidence 的 fact 要明确标注
-5. **及时收敛**: 边际收益低时停止，避免无限探索
+1. **优先 Tavily**: 结构化搜索结果，包含 title/url/content
+2. **Google Fallback**: Tavily 失败时自动降级
+3. **优先权威源**: .gov, .edu, 知名媒体优先探索
+4. **追踪引用链**: 页面里的链接往往更有价值
+5. **记录探索路径**: 方便回溯和验证
+6. **标记不确定性**: 低 confidence 的 fact 要明确标注
+7. **及时收敛**: 边际收益低时停止，避免无限探索
+
+## Error Handling
+
+| Scenario | Fallback |
+|----------|----------|
+| Tavily API 失败 | 自动降级到 Google web_fetch |
+| Google 被 block | 使用直接 URL 列表 |
+| 页面 fetch 失败 | 尝试 browser 工具 |
+| 所有搜索失败 | 请求用户提供起始链接 |
+
+## File Structure
+
+```
+./research/
+├── {query-slug}/
+│   ├── kb/
+│   │   ├── facts.json
+│   │   ├── sources.json
+│   │   └── contradictions.json
+│   ├── exploration_log.json
+│   └── final-report.md
+└── cache/
+    └── tavily-{hash}.json
+```
