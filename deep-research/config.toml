@@ -75,12 +75,20 @@ low = ["medium.com", "substack.com", "blogspot.com", "wordpress.com"]
 
 [synthesis]
 # 报告生成配置
-max_report_length = 15000     # 报告最大长度 (字符，增加)
-min_report_length = 3000      # 报告最小长度 (字符，新增)
+max_report_length = 25000     # 报告最大长度 (字符)
+min_report_length = 8000      # 报告最小长度 (字符) - ENFORCED
 include_contradictions = true # 是否包含矛盾部分
 include_uncertainties = true  # 是否包含不确定部分
 include_methodology = true    # 是否包含方法论说明
-min_citations = 5             # 最少引用数 (提高)
+min_citations = 10            # 最少引用数
+
+[quality]
+# 质量检查
+enforce_min_length = true     # 强制执行最小长度
+check_recency = true          # 检查内容时效性
+max_content_age_days = 30     # 最近内容最大年龄（天）
+require_multiple_angles = true # 要求多个搜索角度
+require_cross_reference = true # 要求交叉验证
 
 [formatting]
 # 格式要求
