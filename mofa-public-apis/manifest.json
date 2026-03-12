@@ -1,0 +1,102 @@
+{
+  "name": "mofa-public-apis",
+  "version": "0.1.0",
+  "description": "Search and discover free public APIs from local cache — browse by category, filter by auth/HTTPS/CORS, get smart recommendations",
+  "timeout_secs": 10,
+  "requires_network": false,
+  "data": {
+    "source": "https://github.com/public-apis/public-apis",
+    "cache_file": "apis.json",
+    "sync_script": "scripts/sync.py",
+    "total_apis": 1415,
+    "total_categories": 50,
+    "last_updated": "2026-03-12"
+  },
+  "config": "config.toml",
+  "architecture": "architecture.dot",
+  "templates": [
+    "templates/search-prompt.md",
+    "templates/recommend-prompt.md"
+  ],
+  "examples": [
+    "examples/weather-api-search.md",
+    "examples/crypto-noauth-filter.md",
+    "examples/frontend-friendly-discovery.md"
+  ],
+  "tools": [
+    {
+      "name": "search_apis",
+      "description": "Search public APIs by keyword with optional filters. Returns scored and ranked results with badges.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search keyword (e.g., 'weather', 'crypto')"
+          },
+          "category": {
+            "type": "string",
+            "description": "Filter by category (e.g., 'Weather', 'Cryptocurrency')"
+          },
+          "auth": {
+            "type": "string",
+            "enum": ["none", "apiKey", "OAuth"],
+            "description": "Filter by authentication type"
+          },
+          "https": {
+            "type": "boolean",
+            "description": "Filter by HTTPS support"
+          },
+          "cors": {
+            "type": "string",
+            "enum": ["yes", "no", "unknown"],
+            "description": "Filter by CORS support"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "Maximum results to return"
+          }
+        }
+      }
+    },
+    {
+      "name": "list_categories",
+      "description": "List all available API categories with counts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "popular_only": {
+            "type": "boolean",
+            "default": false,
+            "description": "Only return popular categories"
+          }
+        }
+      }
+    },
+    {
+      "name": "recommend_apis",
+      "description": "Get smart API recommendations based on use case and constraints",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "use_case": {
+            "type": "string",
+            "description": "What you're building (e.g., 'weather widget', 'crypto tracker')"
+          },
+          "constraints": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Constraints like 'no-auth', 'frontend-only', 'quick-prototype'"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 5,
+            "description": "Number of recommendations"
+          }
+        },
+        "required": ["use_case"]
+      }
+    }
+  ]
+}

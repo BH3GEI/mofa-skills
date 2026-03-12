@@ -1,0 +1,50 @@
+# MOFA McDonald's Configuration
+# MCP Server: https://mcp.mcd.cn
+
+[mcp]
+name = "mofa-mcdonalds"
+version = "1.0.2"
+description = "McDonald's China ordering via MCP Server"
+
+# MCP Server Configuration
+server_url = "https://mcp.mcd.cn"
+protocol = "streamablehttp"
+auth_type = "bearer"
+api_key_env = "MCD_MCP_TOKEN"
+
+# Rate Limiting
+rate_limit_per_minute = 600
+
+[features]
+# Feature flags
+enable_ordering = true
+enable_coupons = true
+enable_points = true
+enable_calendar = true
+enable_nutrition = true
+
+[ordering]
+# Ordering configuration
+default_delivery_type = "immediate"
+max_items_per_order = 20
+auto_select_address = false
+
+[coupons]
+# Coupon settings
+auto_bind_on_start = false
+show_expired = false
+
+[points]
+# Points mall settings
+enable_exchange = true
+
+[output]
+# Output formatting
+show_nutrition_details = true
+show_order_progress = true
+format_currency = "CNY"
+
+[retry]
+# Retry configuration
+max_retries = 3
+retry_delay_seconds = 1

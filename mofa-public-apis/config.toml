@@ -1,0 +1,95 @@
+# MOFA Public APIs Configuration
+# Local cache of https://github.com/public-apis/public-apis
+
+[api]
+name = "mofa-public-apis"
+version = "0.1.0"
+description = "Search and discover free public APIs from local cache"
+
+[data]
+# Local data source
+source_url = "https://github.com/public-apis/public-apis"
+cache_file = "apis.json"
+sync_script = "scripts/sync.py"
+
+# Statistics (auto-updated by sync)
+total_apis = 1415
+total_categories = 50
+last_updated = "2026-03-12"
+
+[search]
+# Default search behavior
+default_limit = 20
+max_limit = 100
+
+# Ranking weights (0-1)
+exact_match_weight = 1.0
+name_match_weight = 0.8
+description_match_weight = 0.5
+category_match_weight = 0.3
+
+# Boost factors
+https_boost = 0.2
+cors_yes_boost = 0.1
+no_auth_boost = 0.15
+
+[filter]
+# Available filter options
+auth_types = ["none", "apiKey", "OAuth"]
+https_options = [true, false]
+cors_options = ["yes", "no", "unknown"]
+
+[display]
+# Output formatting
+show_url = true
+show_auth = true
+show_https = true
+show_cors = true
+show_category = true
+
+# Recommendation thresholds (what makes a "good" API)
+recommended_min_https = true
+recommended_cors = "yes"
+preferred_auth_order = ["none", "apiKey", "OAuth"]
+
+[categories]
+# Popular categories for quick access
+popular = [
+    "Development",
+    "Weather",
+    "Cryptocurrency",
+    "Finance",
+    "Machine Learning",
+    "Music",
+    "News",
+    "Social",
+    "Video",
+    "Geocoding",
+    "Books",
+    "Games & Comics",
+    "Health"
+]
+
+# All categories (for reference)
+all = [
+    "Animals", "Anime", "Anti-Malware", "Art & Design",
+    "Authentication & Authorization", "Books", "Business", "Calendar",
+    "Cloud Storage & File Sharing", "Continuous Integration",
+    "Cryptocurrency", "Currency Exchange", "Data Validation", "Development",
+    "Dictionaries", "Documents & Productivity", "Email", "Entertainment",
+    "Environment", "Events", "Finance", "Food & Drink", "Games & Comics",
+    "Geocoding", "Government", "Health", "Jobs", "Machine Learning",
+    "Music", "News", "Open Data", "Open Source Projects", "Patent",
+    "Personality", "Phone", "Photography", "Programming", "Science & Math",
+    "Security", "Shopping", "Social", "Sports & Fitness", "Test Data",
+    "Text Analysis", "Tracking", "Transportation", "URL Shorteners",
+    "Vehicle", "Video", "Weather"
+]
+
+[output]
+# Output formats
+formats = ["table", "json", "compact"]
+default_format = "table"
+
+# Table format settings
+table_max_width = 80

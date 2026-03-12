@@ -1,0 +1,243 @@
+{
+  "name": "mofa-mcdonalds",
+  "version": "1.0.2",
+  "description": "McDonald's China ordering via MCP Server — 点餐、领券、积分兑换、活动日历、营养查询",
+  "timeout_secs": 60,
+  "requires_network": true,
+  "mcp_server": {
+    "type": "streamablehttp",
+    "url": "https://mcp.mcd.cn",
+    "auth": {
+      "type": "bearer",
+      "env_var": "MCD_MCP_TOKEN"
+    },
+    "rate_limit": "600/minute"
+  },
+  "config": "config.toml",
+  "architecture": "architecture.dot",
+  "templates": [
+    "templates/ordering-prompt.md",
+    "templates/coupon-prompt.md",
+    "templates/points-prompt.md"
+  ],
+  "examples": [
+    "examples/order-workflow.md",
+    "examples/coupon-workflow.md",
+    "examples/points-workflow.md"
+  ],
+  "tools": [
+    {
+      "name": "list_nutrition_foods",
+      "description": "获取麦当劳常见餐品的营养成分数据，包括能量、蛋白质、脂肪、碳水化合物、钠、钙等信息。当用户咨询麦当劳餐品的热量、营养时使用此工具",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "delivery_query_addresses",
+      "description": "查询用户已创建的配送地址列表，用于外送点餐时选择配送地址",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "delivery_create_address",
+      "description": "新增配送地址。当用户无可配送地址或需新增收货地址时使用",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "city": {"type": "string", "description": "城市名称，如 南京市"},
+          "contactName": {"type": "string", "description": "联系人姓名"},
+          "gender": {"type": "string", "description": "性别，先生/女士"},
+          "phone": {"type": "string", "description": "11位手机号"},
+          "address": {"type": "string", "description": "配送地址，如 清竹园9号楼"},
+          "addressDetail": {"type": "string", "description": "门牌号，如 2单元508"}
+        },
+        "required": ["city", "contactName", "phone", "address", "addressDetail"]
+      }
+    },
+    {
+      "name": "query_store_coupons",
+      "description": "查询用户在当前门店下可使用的优惠券列表",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storeCode": {"type": "string", "description": "门店编码"},
+          "beCode": {"type": "string", "description": "BE编码"}
+        },
+        "required": ["storeCode", "beCode"]
+      }
+    },
+    {
+      "name": "query_meals",
+      "description": "查询当前门店可售卖的餐品菜单（分类、餐品编码、标签等）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storeCode": {"type": "string", "description": "门店编码"},
+          "beCode": {"type": "string", "description": "BE编码"}
+        },
+        "required": ["storeCode", "beCode"]
+      }
+    },
+    {
+      "name": "query_meal_detail",
+      "description": "根据餐品编码查询餐品详情（套餐组成、默认选择等）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "code": {"type": "string", "description": "餐品编码"},
+          "storeCode": {"type": "string", "description": "门店编码"},
+          "beCode": {"type": "string", "description": "BE编码"}
+        },
+        "required": ["code", "storeCode", "beCode"]
+      }
+    },
+    {
+      "name": "calculate_price",
+      "description": "根据用户选购商品列表计算商品金额、配送费、优惠金额及应付总价",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storeCode": {"type": "string", "description": "门店编码"},
+          "beCode": {"type": "string", "description": "BE编码"},
+          "items": {
+            "type": "array",
+            "description": "商品列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productCode": {"type": "string", "description": "餐品编码"},
+                "quantity": {"type": "integer", "description": "商品数量"},
+                "couponId": {"type": "string", "description": "优惠券ID（选填）"},
+                "couponCode": {"type": "string", "description": "优惠券编码（选填）"}
+              },
+              "required": ["productCode", "quantity"]
+            }
+          }
+        },
+        "required": ["storeCode", "beCode", "items"]
+      }
+    },
+    {
+      "name": "create_order",
+      "description": "根据门店信息、配送地址、商品列表创建外送订单，返回订单详情与支付链接",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storeCode": {"type": "string", "description": "门店编码"},
+          "beCode": {"type": "string", "description": "BE编码"},
+          "items": {
+            "type": "array",
+            "description": "商品列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productCode": {"type": "string", "description": "餐品编码"},
+                "quantity": {"type": "integer", "description": "商品数量"},
+                "couponId": {"type": "string", "description": "优惠券ID（选填）"},
+                "couponCode": {"type": "string", "description": "优惠券编码（选填）"}
+              },
+              "required": ["productCode", "quantity"]
+            }
+          }
+        },
+        "required": ["storeCode", "beCode", "items"]
+      }
+    },
+    {
+      "name": "query_order",
+      "description": "查询订单状态、订单内容、配送信息等",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "orderId": {"type": "string", "description": "订单号"}
+        },
+        "required": ["orderId"]
+      }
+    },
+    {
+      "name": "campaign_calendar",
+      "description": "查询麦当劳中国当月的营销活动日历，返回进行中、往期和未来日期的活动",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "specifiedDate": {"type": "string", "description": "查询指定日期范围的活动(格式: yyyy-MM-dd)，非必传"}
+        }
+      }
+    },
+    {
+      "name": "available_coupons",
+      "description": "查询用户当前可领取的麦麦省的优惠券列表",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "auto_bind_coupons",
+      "description": "自动领取麦麦省所有当前可用的麦当劳优惠券。当用户说'帮我领券'、'一键领券'时使用此工具",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "query_my_coupons",
+      "description": "查询我有哪些可用的优惠券。就像打开麦当劳App的'我的优惠券'页面",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "query_my_account",
+      "description": "查询用户积分账户信息，包括可用积分、累计积分、冻结积分、即将过期积分等",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "mall_points_products",
+      "description": "查询麦麦商城内可以用积分兑换的餐品券",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "mall_product_detail",
+      "description": "查询指定积分兑换商品券的详细信息（图片、积分、有效期、说明、详情等）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spuId": {"type": "integer", "description": "商品spuId"}
+        },
+        "required": ["spuId"]
+      }
+    },
+    {
+      "name": "mall_create_order",
+      "description": "使用积分兑换指定餐品券，完成积分扣减并发放券码",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "skuId": {"type": "integer", "description": "商品skuId"},
+          "count": {"type": "integer", "description": "兑换数量，默认=1"}
+        },
+        "required": ["skuId"]
+      }
+    },
+    {
+      "name": "now_time_info",
+      "description": "获取当前时间信息，包括时间戳、格式化日期、年月日、时区等",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

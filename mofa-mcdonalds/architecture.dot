@@ -1,0 +1,60 @@
+digraph McDonaldsArchitecture {
+    graph [label="McDonald's Ordering Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // User Input
+    User [label="User Request\n(点餐/领券/查积分)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Parse [label="Intent Parser\n• 点餐\n• 领券\n• 查积分\n• 活动日历", fillcolor=lightyellow, style=filled]
+
+    // MCP Server
+    MCP [label="MCP Server\nhttps://mcp.mcd.cn", shape=cylinder, fillcolor=lightyellow, style=filled]
+
+    // Feature Modules
+    Ordering [label="Ordering Module\n• 查菜单\n• 选餐品\n• 算价格\n• 下订单", fillcolor=lightgreen, style=filled]
+    Coupons [label="Coupon Module\n• 一键领券\n• 查优惠券\n• 用券下单", fillcolor=lightcyan, style=filled]
+    Points [label="Points Module\n• 查积分\n• 积分兑换\n• 兑换下单", fillcolor=lightpink, style=filled]
+    Calendar [label="Calendar Module\n• 活动日历\n• 促销信息", fillcolor=lightyellow, style=filled]
+    Nutrition [label="Nutrition Module\n• 热量查询\n• 营养搭配", fillcolor=lightgreen, style=filled]
+
+    // Order Flow Detail
+    Address [label="Get Address\ndelivery-query-addresses", shape=box, fillcolor=lightgray, style=filled]
+    Menu [label="Query Menu\nquery-meals", shape=box, fillcolor=lightgray, style=filled]
+    Detail [label="Meal Detail\nquery-meal-detail", shape=box, fillcolor=lightgray, style=filled]
+    Price [label="Calculate\ncalculate-price", shape=box, fillcolor=lightgray, style=filled]
+    CreateOrder [label="Create Order\ncreate-order", shape=box, fillcolor=lightgreen, style=filled]
+    Pay [label="Payment\npayH5Url", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="Auth\nBearer Token", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Edges
+    User -> Parse
+    Parse -> Ordering [label="intent=order", color=darkgreen]
+    Parse -> Coupons [label="intent=coupon", color=purple]
+    Parse -> Points [label="intent=points", color=blue]
+    Parse -> Calendar [label="intent=calendar", color=orange]
+    Parse -> Nutrition [label="intent=nutrition", color=darkgreen]
+
+    // Ordering Flow
+    Ordering -> Address
+    Address -> Menu
+    Menu -> Detail [label="need details", style=dashed]
+    Detail -> Price
+    Menu -> Price [label="direct", style=dashed]
+    Price -> CreateOrder
+    CreateOrder -> Pay
+
+    // MCP Connections
+    Address -> MCP
+    Menu -> MCP
+    Detail -> MCP
+    Price -> MCP
+    CreateOrder -> MCP
+    Coupons -> MCP
+    Points -> MCP
+    Calendar -> MCP
+    Nutrition -> MCP
+
+    Auth -> MCP [label="Authorization", style=dashed, color=red]
+}

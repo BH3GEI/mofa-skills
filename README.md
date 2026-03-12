@@ -16,6 +16,8 @@ AI-powered content generation platform that turns text into visual media — pre
 | **mofa-workflow** | artifacts | — | Multi-agent team pipeline (architect → developer → reviewer → tester) |
 | **mofa-news** | `.md` | 8 categories | News digest from Google News, Hacker News, Yahoo, Substack, Medium |
 | **mofa-github** | text | — | GitHub integration via `gh` CLI (issues, PRs, CI, releases, API) |
+| **mofa-public-apis** | text | 40+ categories | Search free public APIs — browse by category, auth, HTTPS, CORS |
+| **mofa-mcdonalds** | text | — | McDonald's China ordering via MCP — 点餐、领券、积分兑换 |
 | **mofa-fm** | `.wav` | — | Voice TTS with custom voice cloning via Qwen3-TTS on Apple Silicon |
 
 ## Architecture
@@ -35,10 +37,13 @@ mofa-skills/
 ├── mofa-infographic/     # 4 infographic styles
 ├── mofa-video/           # Video animation styles
 ├── mofa-research/        # DOT-based research pipeline
+├── mofa-research-2.0/    # DeerFlow + mofa-research hybrid
 ├── mofa-videolizer/      # Subtitle generation (Whisper / basic)
 ├── mofa-workflow/        # DOT-based multi-agent team pipeline
 ├── mofa-news/            # News digest aggregator
 ├── mofa-github/          # GitHub integration via gh CLI
+├── mofa-public-apis/     # Public API discovery (local cache)
+├── mofa-mcdonalds/       # McDonald's China ordering via MCP Server
 ├── mofa-fm/              # Voice TTS + cloning (Pure Rust, via ominix-api)
 │
 └── mofa-cli/             # Pure Rust CLI (single binary, no Node.js)

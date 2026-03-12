@@ -1,0 +1,46 @@
+digraph PublicApisArchitecture {
+    graph [label="Public APIs Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Input
+    User [label="User Query\n(weather, crypto...)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Parse [label="Parse Agent\n• Detect intent\n• Extract filters", fillcolor=lightyellow, style=filled]
+
+    // Data Source
+    Cache [label="Local Cache\napis.json\n(1415 APIs, 50 cats)", shape=cylinder, fillcolor=lightyellow, style=filled]
+
+    // Search Pipeline
+    Search [label="Search Agent\n• Keyword match\n• Category filter\n• Auth/HTTPS/CORS filter", fillcolor=lightgreen, style=filled]
+    Score [label="Score & Rank\n• Exact match: +1.0\n• Name match: +0.8\n• Desc match: +0.5\n• Boosts: HTTPS/CORS/no-auth", fillcolor=lightcyan, style=filled]
+
+    // Enhancement
+    Badge [label="Add Badges\n[推荐] [免认证] [前端友好]", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Format [label="Format Output\ntable | compact | json", fillcolor=lightgreen, style=filled]
+    Output [label="Results\n(sorted + badged)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Recommendation Path
+    Recommend [label="Recommend Agent\n• Understand use case\n• Prioritize by fit\n• Explain choices", fillcolor=lightpink, style=filled]
+
+    // Sync
+    Sync [label="Sync Script\nFetch from GitHub\nUpdate cache", shape=folder, fillcolor=lightgray, style=filled]
+
+    // Edges - Search Flow
+    User -> Parse
+    Parse -> Search
+    Cache -> Search
+    Search -> Score
+    Score -> Badge
+    Badge -> Format
+    Format -> Output
+
+    // Edges - Recommendation Flow
+    Parse -> Recommend [label="need advice", style=dashed, color=purple]
+    Recommend -> Cache [style=dashed]
+    Recommend -> Output
+
+    // Edges - Maintenance
+    Sync -> Cache [label="update", style=dashed, color=darkgreen]
+}
