@@ -112,7 +112,6 @@ fn is_preset(name: &str) -> bool {
 /// Falls back to OMINIX_API_URL or http://localhost:8080 for single-process setups.
 fn tts_url() -> String {
     std::env::var("OMINIX_TTS_URL")
-        .or_else(|_| std::env::var("OMINIX_API_URL"))
         .unwrap_or_else(|_| "http://localhost:8082".to_string())
         .trim_end_matches('/')
         .to_string()
@@ -120,14 +119,13 @@ fn tts_url() -> String {
 
 fn clone_url() -> String {
     std::env::var("OMINIX_CLONE_URL")
-        .or_else(|_| std::env::var("OMINIX_API_URL"))
         .unwrap_or_else(|_| "http://localhost:8083".to_string())
         .trim_end_matches('/')
         .to_string()
 }
 
 fn health_url() -> String {
-    std::env::var("OMINIX_API_URL")
+    std::env::var("OMINIX_ASR_URL")
         .unwrap_or_else(|_| "http://localhost:8081".to_string())
         .trim_end_matches('/')
         .to_string()
