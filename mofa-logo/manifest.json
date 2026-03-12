@@ -1,0 +1,151 @@
+{
+  "name": "mofa-logo",
+  "version": "1.0.0",
+  "description": "AI-powered logo generation with Claude Opus 4.6 - minimalist, mascot, emblem, wordmark styles with SVG output",
+  "timeout_secs": 120,
+  "requires_network": true,
+  "model": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-6",
+    "reasoning": "Based on real-world testing, Opus 4.6 produces the best logo design quality with strong design sense and professional output"
+  },
+  "config": "config.toml",
+  "architecture": "architecture.dot",
+  "templates": [
+    "templates/generate-prompt.md",
+    "templates/refine-prompt.md",
+    "templates/style-guide-prompt.md"
+  ],
+  "examples": [
+    "examples/tech-startup.md",
+    "examples/coffee-shop.md",
+    "examples/fashion-brand.md"
+  ],
+  "tools": [
+    {
+      "name": "generate_logo",
+      "description": "Generate logo concepts with Claude Opus 4.6. Returns 3-4 distinct concepts with SVG code, color palette, and usage guidelines.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "brand_name": {
+            "type": "string",
+            "description": "Brand or company name"
+          },
+          "industry": {
+            "type": "string",
+            "description": "Industry or business type"
+          },
+          "style": {
+            "type": "string",
+            "enum": ["minimalist", "mascot", "emblem", "wordmark", "lettermark", "abstract", "vintage", "modern", "auto"],
+            "default": "auto",
+            "description": "Logo style preference"
+          },
+          "brand_values": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Key brand values (e.g., innovation, reliability, friendly)"
+          },
+          "color_preference": {
+            "type": "string",
+            "description": "Color preference or constraints"
+          },
+          "competitors": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Competitor brands to differentiate from"
+          },
+          "count": {
+            "type": "integer",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 4,
+            "description": "Number of concepts to generate"
+          }
+        },
+        "required": ["brand_name", "industry"]
+      }
+    },
+    {
+      "name": "refine_concept",
+      "description": "Refine and iterate on a selected logo concept based on feedback",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "original_concept": {
+            "type": "object",
+            "description": "The selected concept to refine"
+          },
+          "feedback": {
+            "type": "string",
+            "description": "User feedback for refinement"
+          },
+          "refinement_focus": {
+            "type": "array",
+            "items": {"enum": ["shape", "color", "typography", "composition", "size"]},
+            "description": "Specific aspects to refine"
+          }
+        },
+        "required": ["original_concept", "feedback"]
+      }
+    },
+    {
+      "name": "create_variations",
+      "description": "Create variations of a selected logo (color schemes, layouts, sizes)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base_concept": {
+            "type": "object",
+            "description": "The base logo concept"
+          },
+          "variation_types": {
+            "type": "array",
+            "items": {"enum": ["color_scheme", "monochrome", "reversed", "horizontal", "vertical", "icon_only"]},
+            "default": ["monochrome", "reversed"]
+          }
+        },
+        "required": ["base_concept"]
+      }
+    },
+    {
+      "name": "export_svg",
+      "description": "Generate optimized SVG code for the final logo",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "logo_concept": {
+            "type": "object",
+            "description": "The finalized logo concept"
+          },
+          "optimize": {
+            "type": "boolean",
+            "default": true,
+            "description": "Optimize SVG for web use"
+          }
+        },
+        "required": ["logo_concept"]
+      }
+    },
+    {
+      "name": "create_style_guide",
+      "description": "Generate comprehensive brand style guide with logo usage rules",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "logo_concept": {
+            "type": "object",
+            "description": "The finalized logo"
+          },
+          "include_sections": {
+            "type": "array",
+            "items": {"enum": ["logo_usage", "color_palette", "typography", "applications", "donts"]},
+            "default": ["logo_usage", "color_palette", "donts"]
+          }
+        },
+        "required": ["logo_concept"]
+      }
+    }
+  ]
+}

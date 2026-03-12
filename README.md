@@ -20,6 +20,7 @@ AI-powered content generation platform that turns text into visual media — pre
 | **mofa-mcdonalds** | text | — | McDonald's China ordering via MCP — 点餐、领券、积分兑换 |
 | **mofa-xhs** | text | — | Xiaohongshu (小红书) integration — search, read, like, comment, publish |
 | **mofa-crawler** | text | — | Web crawling via Cloudflare Browser Rendering API — full-site extraction with JS rendering |
+| **mofa-logo** | SVG | 8 styles | AI logo generation with Claude Opus 4.6 — minimalist, mascot, emblem, wordmark |
 | **mofa-fm** | `.wav` | — | Voice TTS with custom voice cloning via Qwen3-TTS on Apple Silicon |
 
 ## Architecture
@@ -48,6 +49,7 @@ mofa-skills/
 ├── mofa-mcdonalds/       # McDonald's China ordering via MCP Server
 ├── mofa-xhs/             # Xiaohongshu (小红书) integration via xhs-cli
 ├── mofa-crawler/         # Web crawling via Cloudflare Browser Rendering API
+├── mofa-logo/            # AI logo generation with Claude Opus 4.6
 ├── mofa-fm/              # Voice TTS + cloning (Pure Rust, via ominix-api)
 │
 └── mofa-cli/             # Pure Rust CLI (single binary, no Node.js)

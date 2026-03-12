@@ -1,0 +1,56 @@
+# MOFA Logo Maker Configuration
+# Optimized for Claude Opus 4.6 - best logo generation quality
+
+[logo]
+name = "mofa-logo"
+version = "1.0.0"
+description = "AI-powered logo generation with Claude Opus 4.6 - text, emblem, mascot, minimalist styles"
+
+# Model Configuration
+# Based on testing: Opus 4.6 produces the best logo quality
+[model]
+provider = "anthropic"
+model = "claude-opus-4-6"
+max_tokens = 4096
+temperature = 0.7
+
+# Logo Styles
+[styles]
+available = ["minimalist", "mascot", "emblem", "wordmark", "lettermark", "abstract", "vintage", "modern"]
+default = "modern"
+
+# Design Elements
+[design]
+# Common logo design principles to include in prompts
+principles = [
+  "Scalable - works at any size from favicon to billboard",
+  "Memorable - distinctive and recognizable",
+  "Timeless - avoids trendy design cliches",
+  "Appropriate - matches brand personality",
+  "Simple - clean and uncluttered",
+  "Versatile - works in color and monochrome"
+]
+
+# Color Schemes
+[colors]
+palettes = [
+  "monochrome",
+  "complementary",
+  "triadic",
+  "analogous",
+  "monochromatic"
+]
+max_colors = 3
+
+# Output Formats
+[output]
+formats = ["SVG", "PNG", "concept"]
+default_format = "concept"
+
+# Variations to generate
+variations = 3
+
+# Constraints
+[constraints]
+max_concepts_per_request = 4
+revision_rounds = 2

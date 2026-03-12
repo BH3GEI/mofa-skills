@@ -1,0 +1,35 @@
+digraph LogoMakerArchitecture {
+    graph [label="Logo Maker Skill Architecture (Opus 4.6)", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(brand name, industry, style)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Parse brand brief\n• Determine style\n• Set constraints", fillcolor=lightyellow, style=filled]
+
+    // Style Selection
+    Style [label="Style Selector\n• minimalist\n• mascot\n• emblem\n• wordmark\n• abstract", fillcolor=lightcyan, style=filled]
+
+    // Prompt Engineering
+    Prompt [label="Prompt Engineer\n• Design principles\n• Color theory\n• Composition rules\n• Technical specs", fillcolor=lightgreen, style=filled]
+
+    // Generation
+    Opus [label="Claude Opus 4.6\nLogo Generation", shape=cylinder, fillcolor=lightpink, style=filled]
+
+    // Refinement
+    Refine [label="Refinement Agent\n• Evaluate concepts\n• Select best\n• Iterate improvements", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Export [label="Export Formatter\n• SVG code\n• PNG description\n• Style guide", fillcolor=lightgreen, style=filled]
+    Output [label="Logo Package\n+ Usage guidelines", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Style
+    Style -> Prompt
+    Prompt -> Opus
+    Opus -> Refine
+    Refine -> Opus [label="iterate", style=dashed, color=gray]
+    Refine -> Export
+    Export -> Output
+}
