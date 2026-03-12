@@ -1,0 +1,224 @@
+{
+  "name": "mofa-crawler",
+  "version": "1.0.0",
+  "description": "Web crawling via Cloudflare Browser Rendering API - full-site extraction with JavaScript rendering and AI structured extraction",
+  "timeout_secs": 300,
+  "requires_network": true,
+  "dependencies": {
+    "service": "Cloudflare Browser Rendering API",
+    "docs": "https://developers.cloudflare.com/browser-rendering",
+    "pricing": "https://developers.cloudflare.com/browser-rendering/pricing/"
+  },
+  "config": "config.toml",
+  "architecture": "architecture.dot",
+  "templates": [
+    "templates/onboarding-prompt.md",
+    "templates/entry-prompt.md",
+    "templates/discovery-prompt.md",
+    "templates/analyze-prompt.md",
+    "templates/synthesize-prompt.md"
+  ],
+  "examples": [
+    "examples/crawl-docs-site.md",
+    "examples/ai-extraction.md",
+    "examples/incremental-crawl.md"
+  ],
+  "env": {
+    "CF_API_TOKEN": "Cloudflare API Token with Browser Rendering:Edit permission",
+    "CF_ACCOUNT_ID": "Cloudflare Account ID"
+  },
+  "onboarding": {
+    "description": "Guide users to set up Cloudflare Crawler API",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Get Account ID",
+        "action": "Visit https://dash.cloudflare.com, find 'Account ID' on right sidebar",
+        "command": "echo 'CF_ACCOUNT_ID=your_account_id_here' >> .env"
+      },
+      {
+        "step": 2,
+        "title": "Create API Token",
+        "action": "My Profile → API Tokens → Create Token → Custom token → Permissions: Account - Browser Rendering - Edit",
+        "command": "echo 'CF_API_TOKEN=your_api_token_here' >> .env"
+      },
+      {
+        "step": 3,
+        "title": "Verify Setup",
+        "action": "Test API connectivity",
+        "command": "curl -H \"Authorization: Bearer $CF_API_TOKEN\" https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/browser-rendering"
+      }
+    ],
+    "triggers": [
+      "when user says '怎么开始'",
+      "when user says '如何配置'",
+      "when API returns 401 unauthorized",
+      "when env vars are missing"
+    ]
+  },
+  "tools": [
+    {
+      "name": "submit_crawl",
+      "description": "Submit a new crawl job to Cloudflare. Returns job_id for polling. Supports markdown/html/json output, JS rendering, URL filtering.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Starting URL to crawl (required)"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "Max pages to crawl (1-1000)"
+          },
+          "formats": {
+            "type": "array",
+            "items": {"enum": ["html", "markdown", "json"]},
+            "default": ["markdown"],
+            "description": "Output formats"
+          },
+          "render": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable JS rendering (Chrome browser)"
+          },
+          "ai_prompt": {
+            "type": "string",
+            "description": "For JSON format: natural language prompt for AI extraction (e.g., 'Extract product name and price')"
+          },
+          "include_patterns": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "URL patterns to include (wildcards supported, e.g., '/docs/**')"
+          },
+          "exclude_patterns": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "URL patterns to exclude (wildcards supported)"
+          },
+          "modified_since": {
+            "type": "string",
+            "description": "ISO 8601 timestamp - only crawl pages modified since this date"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "poll_crawl_status",
+      "description": "Poll crawl job status. Returns 'queued', 'crawling', 'completed', or 'failed'. Auto-retry on transient errors.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Job ID from submit_crawl response"
+          },
+          "max_wait_seconds": {
+            "type": "integer",
+            "default": 300,
+            "description": "Maximum time to wait for completion"
+          }
+        },
+        "required": ["job_id"]
+      }
+    },
+    {
+      "name": "get_crawl_result",
+      "description": "Get completed crawl results. Returns all crawled pages with content.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Completed job ID"
+          }
+        },
+        "required": ["job_id"]
+      }
+    },
+    {
+      "name": "crawl_and_wait",
+      "description": "One-shot crawl: submit, poll until complete, return results. Convenience wrapper for simple use cases.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string"},
+          "limit": {"type": "integer", "default": 50},
+          "formats": {"type": "array", "default": ["markdown"]},
+          "render": {"type": "boolean", "default": true},
+          "ai_prompt": {"type": "string"},
+          "include_patterns": {"type": "array"},
+          "exclude_patterns": {"type": "array"}
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "list_crawl_jobs",
+      "description": "List recent crawl jobs with their status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "Number of jobs to return"
+          }
+        }
+      }
+    },
+    {
+      "name": "cancel_crawl_job",
+      "description": "Cancel a running crawl job",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Job ID to cancel"
+          }
+        },
+        "required": ["job_id"]
+      }
+    },
+    {
+      "name": "analyze_crawl_result",
+      "description": "Analyze crawled content: extract key info, generate summary, identify patterns. AI-powered analysis.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {"type": "string"},
+          "analysis_type": {
+            "type": "string",
+            "enum": ["summary", "topics", "entities", "links", "statistics"],
+            "default": "summary"
+          }
+        },
+        "required": ["job_id"]
+      }
+    },
+    {
+      "name": "export_crawl_result",
+      "description": "Export crawl results to local files in organized directory structure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {"type": "string"},
+          "output_dir": {
+            "type": "string",
+            "default": "./crawl",
+            "description": "Base output directory"
+          },
+          "format": {
+            "type": "string",
+            "enum": ["combined", "separate"],
+            "default": "combined"
+          }
+        },
+        "required": ["job_id"]
+      }
+    }
+  ]
+}

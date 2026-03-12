@@ -479,3 +479,46 @@ With 4-8 parallel workers:
 | Recursion | Static | Dynamic (gap-driven) |
 | Output Format | Simple | Docling-inspired structured |
 | Plan Mode | No | TodoList-ready |
+
+## Related Skills
+
+### mofa-crawler
+Web crawling via Cloudflare Browser Rendering API for data acquisition.
+
+**Use with mofa-research-2.0 when:**
+- Target data is on specific websites not indexed by search engines
+- Need full-site extraction (e.g., documentation, knowledge bases)
+- Require JavaScript-rendered content (SPAs, React/Vue sites)
+- Want structured data extraction with AI
+
+**Integration pattern:**
+```
+mofa-crawler: Crawl docs site → Markdown
+      ↓
+mofa-research-2.0: Analyze + Synthesize → Research report
+```
+
+### mofa-xhs
+Xiaohongshu (小红书) integration for social media research.
+
+**Use with mofa-research-2.0 when:**
+- Researching Chinese consumer trends and opinions
+- Analyzing product reviews and user experiences
+- Tracking influencer content and engagement
+- Studying fashion/beauty/travel trends
+
+**Integration pattern:**
+```
+mofa-xhs: Search topics → Extract notes
+      ↓
+mofa-research-2.0: Cross-reference + Analyze → Trend report
+```
+
+### mofa-public-apis
+Public API discovery for accessing external data sources.
+
+**Use with mofa-research-2.0 when:**
+- Need weather, finance, news data for research
+- Looking for free data sources without API keys
+- Building data enrichment pipelines
+

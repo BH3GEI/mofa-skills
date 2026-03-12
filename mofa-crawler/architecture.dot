@@ -1,0 +1,45 @@
+digraph CrawlerArchitecture {
+    graph [label="Cloudflare Crawler Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry Phase
+    User [label="User Request\n(url, format, filters)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Parse intent\n• Validate URL\n• Set crawl strategy", fillcolor=lightyellow, style=filled]
+
+    // Discovery Phase
+    Submit [label="Submit Crawl Job\nPOST /crawl", fillcolor=lightgreen, style=filled]
+    Poll [label="Poll Status\nGET /crawl/{job_id}", shape=diamond, fillcolor=lightyellow, style=filled]
+    Cloudflare [label="Cloudflare\nBrowser Rendering", shape=cylinder, fillcolor=lightyellow, style=filled]
+
+    // Results
+    Success [label="Crawl Success", fillcolor=lightgreen, style=filled]
+    Failed [label="Crawl Failed\n(error/retry)", fillcolor=lightsalmon, style=filled]
+
+    // Analyze Phase
+    Analyze [label="Analyze Agent\n• Extract content\n• Structure data\n• Filter results", fillcolor=lightcyan, style=filled]
+
+    // Synthesize Phase
+    Synthesize [label="Synthesize Agent\n• Format output\n• Generate summary\n• Save files", fillcolor=lightpink, style=filled]
+
+    // Output
+    Output [label="Results\n(markdown/json/html)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Submit
+    Submit -> Cloudflare
+    Cloudflare -> Poll
+    Poll -> Poll [label="in progress", style=dashed, color=gray]
+    Poll -> Success [label="completed", color=darkgreen]
+    Poll -> Failed [label="failed", color=red]
+    Failed -> Submit [label="retry", style=dashed]
+    Success -> Analyze
+    Analyze -> Synthesize
+    Synthesize -> Output
+
+    // Auth
+    Auth [label="Auth\nCF_API_TOKEN", shape=hexagon, fillcolor=lightsalmon, style=filled]
+    Auth -> Submit [style=dashed, color=red]
+    Auth -> Poll [style=dashed, color=red]
+}

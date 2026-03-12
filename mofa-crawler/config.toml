@@ -1,0 +1,66 @@
+# MOFA Crawler Configuration
+# Cloudflare Browser Rendering Crawl API
+
+[crawler]
+name = "mofa-crawler"
+version = "1.0.0"
+description = "Web crawling via Cloudflare Browser Rendering API - full-site extraction with JS rendering"
+
+# Cloudflare API Configuration
+api_base = "https://api.cloudflare.com/client/v4/accounts/{account_id}/browser-rendering"
+auth_type = "bearer"
+api_token_env = "CF_API_TOKEN"
+account_id_env = "CF_ACCOUNT_ID"
+
+[crawl]
+# Default crawl settings
+default_limit = 50
+max_limit = 1000
+timeout_minutes = 10
+
+# Output formats: html, markdown, json
+default_formats = ["markdown"]
+available_formats = ["html", "markdown", "json"]
+
+# Browser rendering
+js_rendering_default = true
+
+# AI extraction for JSON format
+ai_extraction_default = false
+
+[limits]
+# Cloudflare limits (Free tier)
+free_max_tasks_per_day = 5
+free_max_pages_per_task = 100
+free_max_browser_time_minutes = 10
+
+# Paid tier ($5/month)
+paid_max_tasks_per_day = 1000
+paid_max_pages_per_task = 1000
+paid_max_browser_time_minutes = 60
+
+[retry]
+max_retries = 3
+retry_delay_seconds = 5
+poll_interval_seconds = 10
+
+[output]
+# Result retention
+result_retention_days = 14
+max_job_runtime_hours = 168  # 7 days
+
+[filtering]
+# URL filtering
+support_include_patterns = true
+support_exclude_patterns = true
+support_modified_since = true
+
+[pricing]
+free_tier = "$0 - 5 tasks/day, 100 pages/task"
+paid_tier = "$5/month - 1000 tasks/day, 1000 pages/task"
+
+[features]
+incremental_crawl = true
+ai_structured_extraction = true
+js_rendering = true
+parallel_crawling = false  # Sequential only
