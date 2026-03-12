@@ -1,0 +1,12 @@
+# Crawlee-Python Examples Requirements
+# Python 3.10+ required
+
+# Basic crawler (BeautifulSoup)
+crawlee[beautifulsoup]>=0.0.1
+
+# For XPath/CSS selectors (optional)
+# crawlee[parsel]
+
+# For browser automation (optional)
+# crawlee[playwright]
+# playwright

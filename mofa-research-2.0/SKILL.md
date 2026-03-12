@@ -522,3 +522,21 @@ Public API discovery for accessing external data sources.
 - Looking for free data sources without API keys
 - Building data enrichment pipelines
 
+### mofa-crawlee-python
+Web scraping with Crawlee-Python library for structured data extraction.
+
+**Use with mofa-research-2.0 when:**
+- Need to crawl and extract data from websites
+- Target sites have JavaScript-heavy content (SPAs)
+- Require robust scraping with retries and proxy rotation
+- Want exportable datasets (JSON, CSV, Parquet)
+
+**Integration pattern:**
+```
+mofa-research-2.0: Identify data sources
+      ↓
+mofa-crawlee-python: Crawl and extract structured data
+      ↓
+mofa-research-2.0: Analyze extracted data → Research report
+```
+

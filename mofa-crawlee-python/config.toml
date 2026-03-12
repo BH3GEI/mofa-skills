@@ -1,0 +1,90 @@
+# MOFA Crawlee-Python Configuration
+# For teaching AI to use Crawlee-Python effectively
+
+[skill]
+name = "mofa-crawlee-python"
+version = "1.0.0"
+description = "Teach AI to use Crawlee-Python for web scraping"
+
+[crawler]
+# Default crawler settings
+default_type = "beautifulsoup"  # beautifulsoup | playwright | http | parsel
+max_requests_per_crawl = 100
+request_handler_timeout_seconds = 30
+navigation_timeout_seconds = 30
+
+# Concurrency settings
+min_concurrency = 1
+max_concurrency = 5
+max_requests_per_second = null  # Not directly supported, use custom logic if needed
+
+# Retry settings
+max_request_retries = 3
+retry_on_blocked = true
+
+[stealth]
+# Anti-detection settings for protected sites
+enabled_by_default = false
+use_session_pool = true
+session_pool_size = 10
+persist_cookies = true
+random_delays = true
+delay_min_ms = 1000
+delay_max_ms = 3000
+
+[output]
+# Default output settings
+formats = ["json", "csv"]
+default_format = "json"
+output_dir = "./output"
+
+[playwright]
+# Playwright-specific settings
+browser_type = "chromium"  # chromium | firefox | webkit
+headless = true
+viewport_width = 1920
+viewport_height = 1080
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+[ethics]
+# Ethical scraping guidelines
+respect_robots_txt = true
+request_delay_ms = 1000
+max_pages_per_domain = 1000
+warning_large_crawl_threshold = 10000
+
+[code_generation]
+# Code generation preferences
+template_style = "complete"  # complete | minimal
+include_comments = true
+include_error_handling = true
+include_logging = true
+type_hints = true
+
+[patterns]
+# Common pattern templates available
+templates = [
+    "simple_static",
+    "javascript_spa",
+    "multi_route",
+    "api_scraping",
+    "stealth_protected",
+    "infinite_scroll",
+    "table_extraction",
+    "jsonld_structured"
+]
+
+[installation]
+# Installation commands
+basic = "pip install crawlee"
+beautifulsoup = "pip install crawlee[beautifulsoup]"
+playwright = "pip install crawlee[playwright] && playwright install"
+all = "pip install crawlee[all]"
+
+[validation]
+# Code validation rules
+check_imports = true
+check_async_await = true
+check_push_data = true
+check_export_data = true
+warn_blocking_calls = true
