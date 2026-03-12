@@ -1,0 +1,41 @@
+# MOFA XHS Configuration
+# Xiaohongshu (小红书) CLI integration
+
+[xhs]
+name = "mofa-xhs"
+version = "1.0.0"
+description = "Xiaohongshu (小红书) integration via xhs-cli"
+
+# Dependencies
+requires_bin = "xhs"
+install_command = "uv tool install xhs-cli"
+
+[auth]
+# Authentication methods
+methods = ["chrome-cookies", "qr-code", "manual-cookie"]
+session_cache = true
+auto_extract = true
+
+[features]
+search = true
+read = true
+interactions = true
+post = true
+user_profile = true
+discovery = true
+
+[output]
+# Output preferences
+default_format = "table"
+json_available = true
+
+[limits]
+# Rate limiting and pagination
+max_search_results = 20
+max_feed_items = 20
+max_user_posts = 20
+max_favorites = 20
+
+[retry]
+max_retries = 2
+retry_delay_seconds = 1

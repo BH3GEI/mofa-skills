@@ -1,0 +1,322 @@
+{
+  "name": "mofa-xhs",
+  "version": "1.0.0",
+  "description": "Xiaohongshu (小红书, RedNote) integration via xhs-cli — search notes, browse profiles, like/comment/publish",
+  "timeout_secs": 60,
+  "requires_network": true,
+  "dependencies": {
+    "binary": "xhs",
+    "install": "uv tool install xhs-cli",
+    "source": "https://github.com/jackwener/xhs-cli"
+  },
+  "config": "config.toml",
+  "architecture": "architecture.dot",
+  "templates": [
+    "templates/search-prompt.md",
+    "templates/interact-prompt.md",
+    "templates/post-prompt.md"
+  ],
+  "examples": [
+    "examples/search-workflow.md",
+    "examples/interact-workflow.md",
+    "examples/post-workflow.md"
+  ],
+  "tools": [
+    {
+      "name": "xhs_search",
+      "description": "Search Xiaohongshu notes by keyword. Returns note list with title, author, likes, etc.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "Search keyword, e.g., '咖啡', '旅行攻略'"
+          },
+          "json": {
+            "type": "boolean",
+            "default": false,
+            "description": "Output as JSON for parsing"
+          }
+        },
+        "required": ["keyword"]
+      }
+    },
+    {
+      "name": "xhs_read",
+      "description": "Read note details by note ID. Get content, images, comments.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Note ID (from search results)"
+          },
+          "comments": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include comments in output"
+          },
+          "json": {
+            "type": "boolean",
+            "default": false,
+            "description": "Output as JSON"
+          }
+        },
+        "required": ["note_id"]
+      }
+    },
+    {
+      "name": "xhs_feed",
+      "description": "Browse recommended feed (explore page)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "json": {
+            "type": "boolean",
+            "default": false,
+            "description": "Output as JSON"
+          }
+        }
+      }
+    },
+    {
+      "name": "xhs_topics",
+      "description": "Search topics/hashtags",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "Topic keyword"
+          },
+          "json": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": ["keyword"]
+      }
+    },
+    {
+      "name": "xhs_user",
+      "description": "Get user profile by user ID",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID (hex format)"
+          },
+          "json": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "name": "xhs_user_posts",
+      "description": "List user's published notes",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "json": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "name": "xhs_followers",
+      "description": "List user's followers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "name": "xhs_following",
+      "description": "List user's following",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "name": "xhs_like",
+      "description": "Like a note (requires login)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Note ID to like"
+          },
+          "undo": {
+            "type": "boolean",
+            "default": false,
+            "description": "Unlike instead of like"
+          }
+        },
+        "required": ["note_id"]
+      }
+    },
+    {
+      "name": "xhs_favorite",
+      "description": "Favorite a note (requires login)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Note ID to favorite"
+          },
+          "undo": {
+            "type": "boolean",
+            "default": false,
+            "description": "Unfavorite instead of favorite"
+          }
+        },
+        "required": ["note_id"]
+      }
+    },
+    {
+      "name": "xhs_comment",
+      "description": "Comment on a note (requires login)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Note ID"
+          },
+          "content": {
+            "type": "string",
+            "description": "Comment content"
+          }
+        },
+        "required": ["note_id", "content"]
+      }
+    },
+    {
+      "name": "xhs_delete",
+      "description": "Delete your own note (requires login)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Note ID to delete"
+          }
+        },
+        "required": ["note_id"]
+      }
+    },
+    {
+      "name": "xhs_post",
+      "description": "Publish a new note (requires login)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Note title"
+          },
+          "content": {
+            "type": "string",
+            "description": "Note body text"
+          },
+          "images": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Image file paths"
+          },
+          "json": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": ["title"]
+      }
+    },
+    {
+      "name": "xhs_favorites",
+      "description": "List your favorite notes (requires login)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "max": {
+            "type": "integer",
+            "default": 20,
+            "description": "Maximum items to return"
+          },
+          "json": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    {
+      "name": "xhs_status",
+      "description": "Check login status",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "xhs_login",
+      "description": "Login to Xiaohongshu (auto-extract Chrome cookies or QR code)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "cookie": {
+            "type": "string",
+            "description": "Optional: provide cookie string manually"
+          }
+        }
+      }
+    },
+    {
+      "name": "xhs_logout",
+      "description": "Logout and clear cookies",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "xhs_whoami",
+      "description": "Get current user profile (requires login)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "json": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    }
+  ]
+}

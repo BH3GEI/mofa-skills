@@ -1,0 +1,46 @@
+digraph XHSArchitecture {
+    graph [label="Xiaohongshu (小红书) Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // User
+    User [label="User Request\n(搜索/点赞/发布)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Parse [label="Intent Parser\n• search\n• read\n• like/comment\n• post", fillcolor=lightyellow, style=filled]
+
+    // Auth
+    Auth [label="Auth Check\nxhs status", shape=diamond, fillcolor=lightsalmon, style=filled]
+    Login [label="Login\nxhs login", fillcolor=lightyellow, style=filled]
+
+    // Modules
+    Search [label="Search Module\n• xhs search\n• xhs topics", fillcolor=lightgreen, style=filled]
+    Read [label="Read Module\n• xhs read\n• xhs feed", fillcolor=lightcyan, style=filled]
+    UserMod [label="User Module\n• xhs user\n• xhs user-posts\n• xhs followers", fillcolor=lightpink, style=filled]
+    Interact [label="Interact Module\n• xhs like\n• xhs favorite\n• xhs comment", fillcolor=lightgreen, style=filled]
+    Post [label="Post Module\n• xhs post", fillcolor=lightyellow, style=filled]
+
+    // XHS CLI
+    XHS [label="xhs-cli\n(https://github.com/jackwener/xhs-cli)", shape=cylinder, fillcolor=lightgray, style=filled]
+
+    // Xiaohongshu
+    XHSPlatform [label="Xiaohongshu\nPlatform", shape=cloud, fillcolor=lightblue, style=filled]
+
+    // Edges
+    User -> Parse
+    Parse -> Search [label="search", color=darkgreen]
+    Parse -> Read [label="read/feed", color=blue]
+    Parse -> UserMod [label="user", color=purple]
+    Parse -> Interact [label="like/comment", color=red]
+    Parse -> Post [label="post", color=orange]
+
+    // Auth flow
+    Search -> XHS
+    Read -> XHS
+    UserMod -> XHS
+    Interact -> Auth
+    Post -> Auth
+    Auth -> Login [label="not logged in", style=dashed, color=red]
+    Auth -> XHS [label="logged in", color=darkgreen]
+    Login -> XHS
+
+    XHS -> XHSPlatform
+}
