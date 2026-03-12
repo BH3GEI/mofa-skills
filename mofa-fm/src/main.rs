@@ -105,9 +105,30 @@ fn is_preset(name: &str) -> bool {
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-fn api_base_url() -> String {
+/// Resolve the base URL for a specific TTS service.
+/// In the 3-process architecture each model type runs on its own port:
+///   - OMINIX_TTS_URL     (preset voices, CustomVoice model, default :8082)
+///   - OMINIX_CLONE_URL   (voice cloning, Base model, default :8083)
+/// Falls back to OMINIX_API_URL or http://localhost:8080 for single-process setups.
+fn tts_url() -> String {
+    std::env::var("OMINIX_TTS_URL")
+        .or_else(|_| std::env::var("OMINIX_API_URL"))
+        .unwrap_or_else(|_| "http://localhost:8082".to_string())
+        .trim_end_matches('/')
+        .to_string()
+}
+
+fn clone_url() -> String {
+    std::env::var("OMINIX_CLONE_URL")
+        .or_else(|_| std::env::var("OMINIX_API_URL"))
+        .unwrap_or_else(|_| "http://localhost:8083".to_string())
+        .trim_end_matches('/')
+        .to_string()
+}
+
+fn health_url() -> String {
     std::env::var("OMINIX_API_URL")
-        .unwrap_or_else(|_| "http://localhost:8080".to_string())
+        .unwrap_or_else(|_| "http://localhost:8081".to_string())
         .trim_end_matches('/')
         .to_string()
 }
@@ -260,9 +281,8 @@ fn handle_tts(input_json: &str) {
         fail("'text' must not be empty");
     }
 
-    let base_url = api_base_url();
     let client = http_client();
-    if let Err(e) = check_health(&client, &base_url) {
+    if let Err(e) = check_health(&client, &health_url()) {
         fail(&e);
     }
 
@@ -288,9 +308,9 @@ fn handle_tts(input_json: &str) {
     });
 
     let (endpoint, body) = if let Some(ref_path) = resolve_custom_voice(&voice_name) {
-        // Custom voice → use /v1/audio/speech/clone (always returns WAV)
+        // Custom voice → clone port directly (Base model)
         (
-            format!("{base_url}/v1/audio/speech/clone"),
+            format!("{}/v1/audio/speech/clone", clone_url()),
             json!({
                 "input": input.text,
                 "reference_audio": ref_path.to_string_lossy(),
@@ -298,9 +318,9 @@ fn handle_tts(input_json: &str) {
             }),
         )
     } else {
-        // Preset voice → use /v1/audio/speech (streaming PCM, converted to WAV)
+        // Preset voice → TTS port directly (CustomVoice model)
         (
-            format!("{base_url}/v1/audio/speech"),
+            format!("{}/v1/audio/speech", tts_url()),
             json!({
                 "input": input.text,
                 "voice": voice_name,
