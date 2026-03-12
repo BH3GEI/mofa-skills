@@ -114,8 +114,9 @@ fn api_base_url() -> String {
 
 fn http_client() -> reqwest::blocking::Client {
     reqwest::blocking::Client::builder()
-        // No global timeout — streaming PCM chunks keep the connection alive.
         .connect_timeout(Duration::from_secs(5))
+        .timeout(Duration::from_secs(300)) // 5 min — clone with sentence chunking can take 60s+
+        .tcp_keepalive(Duration::from_secs(15)) // prevent OS from killing idle TCP connections
         .build()
         .expect("failed to build HTTP client")
 }
