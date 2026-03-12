@@ -183,3 +183,63 @@ xhs status && xhs like <note_id>
 - Do not share raw cookie values in chat logs
 - Prefer `xhs login` over manual cookie input
 - Re-login via `xhs login` if auth fails
+
+## Real-World Testing Notes
+
+Based on actual testing (2026-03-13, macOS, xhs-cli v0.1.4):
+
+### Installation
+
+```bash
+uv tool install xhs-cli
+```
+
+**Note:** First run will auto-download ~306MB Camoufox browser (anti-fingerprint Firefox). Takes 1-3 minutes depending on network.
+
+### Without Login (Anonymous)
+
+| Command | Status | Notes |
+|---------|--------|-------|
+| `xhs feed` | ✅ Works | Returns 35 recommended items |
+| `xhs search` | ❌ Requires login | Returns empty `[]` |
+| `xhs topics` | ❌ Requires login | Returns empty |
+| `xhs read` | ⚠️ Partial | Returns metadata but content may be empty |
+| `xhs status` | ✅ Works | Shows "Not logged in" |
+
+### After Login
+
+Login required for full functionality:
+- Search notes
+- Like/Comment/Favorite
+- View user profiles
+- Post new notes
+- Access favorites list
+
+### Common Issues
+
+1. **Camoufox download fails**
+   - Check network connectivity to GitHub
+   - Manual download: https://github.com/daijro/camoufox/releases
+
+2. **Login cookie extraction fails**
+   - Ensure Chrome is installed and has logged into xiaohongshu.com
+   - Alternative: Use `xhs login` without Chrome to get QR code
+
+3. **Search returns empty**
+   - Normal if not logged in
+   - After login, should return results
+
+4. **Rate limiting**
+   - Xiaohongshu has strict rate limits
+   - Add delays between requests
+   - Avoid rapid-fire operations
+
+### Quick Test After Installation
+
+```bash
+# Test without login
+xhs feed
+
+# Should see table output with ~35 recommended notes
+# If this works, installation is successful
+```
