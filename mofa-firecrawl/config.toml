@@ -1,0 +1,120 @@
+# MOFA Firecrawl Configuration
+# Firecrawl CLI integration for deep content crawling and analysis
+
+[firecrawl]
+# Firecrawl CLI configuration
+name = "mofa-firecrawl"
+version = "1.0.0"
+api_key_env = "FIRECRAWL_API_KEY"
+api_url_env = "FIRECRAWL_API_URL"
+
+[commands]
+# Default options for each command
+
+[commands.scrape]
+# 单页抓取默认配置
+format = "markdown"              # markdown | html | rawHtml | json
+only_main_content = true         # 默认只获取主内容
+wait_for = 0                     # 等待 JS 渲染时间 (ms)
+screenshot = false               # 是否截图
+include_tags = []                # 包含的 HTML 标签
+exclude_tags = ["nav", "footer", "aside", "header"]  # 排除的标签
+
+[commands.crawl]
+# 整站爬取默认配置
+limit = 100                      # 最大爬取页面数
+max_depth = 3                    # 最大爬取深度
+include_paths = []               # 包含路径模式
+exclude_paths = ["/admin", "/login", "/api", "/_"]  # 排除路径
+allow_subdomains = false         # 是否允许子域名
+allow_external_links = false     # 是否允许外部链接
+crawl_entire_domain = false      # 爬取整个域名
+ignore_query_parameters = false  # 忽略查询参数
+sitemap = "include"              # include | skip | only
+delay = 0                        # 请求间隔 (ms)
+max_concurrency = 5              # 最大并发数
+poll_interval = 5                # 状态轮询间隔 (秒)
+timeout = 300                    # 等待超时 (秒)
+
+[commands.map]
+# URL 地图默认配置
+limit = 1000                     # 最大 URL 数量
+search = ""                      # 搜索过滤
+include_subdomains = false       # 包含子域名
+ignore_query_parameters = false  # 忽略查询参数
+sitemap = "include"              # sitemap 处理方式
+
+[commands.search]
+# 搜索默认配置
+limit = 5                        # 最大结果数
+sources = "web"                  # web | images | news (逗号分隔)
+categories = ""                  # github | research | pdf
+tbs = ""                         # 时间过滤: qdr:h|d|w|m|y
+location = ""                    # 地理位置
+country = "US"                   # 国家代码
+timeout = 60000                  # 超时 (ms)
+ignore_invalid_urls = false      # 忽略无效 URL
+scrape = false                   # 是否抓取结果
+scrape_formats = "markdown"      # 抓取格式
+only_main_content = true         # 抓取时只获取主内容
+
+[commands.browser]
+# 浏览器默认配置
+ttl = 600                        # 会话存活时间 (秒)
+ttl_inactivity = 0               # 不活动超时 (秒)
+profile = ""                     # 浏览器配置文件名
+no_save_changes = false          # 不保存配置更改
+stream = false                   # 启用实时视图
+
+[output]
+# 输出配置
+base_dir = "./firecrawl"         # 基础输出目录
+save_raw = true                  # 保存原始输出
+save_processed = true            # 保存处理后内容
+save_report = true               # 保存分析报告
+formats = ["markdown", "json"]   # 输出格式
+
+[processing]
+# 内容处理配置
+extract_metadata = true          # 提取元数据
+generate_summary = true          # 生成摘要
+detect_content_type = true       # 检测内容类型
+extract_entities = false         # 提取实体
+min_content_length = 100         # 最小内容长度
+remove_duplicates = true         # 去除重复内容
+
+[analysis]
+# 分析配置
+topics_enabled = true            # 主题分析
+entity_extraction = true         # 实体提取
+timeline_enabled = false         # 时间线构建
+cross_reference = true           # 交叉引用
+quality_threshold = 0.5          # 质量阈值
+
+[strategy]
+# 策略选择配置
+auto_detect = true               # 自动检测策略
+prefer_scrape_for_single = true  # 单 URL 优先 scrape
+prefer_crawl_for_domain = true   # 域名优先 crawl
+use_browser_for_dynamic = true   # 动态内容使用 browser
+
+[limits]
+# 资源限制
+max_pages_per_job = 500          # 单次任务最大页面数
+max_concurrent_jobs = 3          # 最大并发任务数
+max_file_size_mb = 50            # 单个文件大小限制
+total_storage_mb = 500           # 总存储限制
+
+[retry]
+# 重试配置
+max_retries = 3                  # 最大重试次数
+retry_delay_seconds = 5          # 重试间隔
+retry_on_timeout = true          # 超时时重试
+retry_on_429 = true              # 429 时重试
+
+[logging]
+# 日志配置
+level = "info"                   # debug | info | warn | error
+show_progress = true             # 显示进度
+show_timing = false              # 显示耗时
+save_logs = true                 # 保存日志文件

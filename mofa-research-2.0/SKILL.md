@@ -498,6 +498,66 @@ mofa-crawler: Crawl docs site → Markdown
 mofa-research-2.0: Analyze + Synthesize → Research report
 ```
 
+### mofa-firecrawl
+Advanced web crawling and scraping via Firecrawl CLI with support for single-page scraping, full-site crawling, URL mapping, web search, and cloud browser automation.
+
+**Use with mofa-research-2.0 when:**
+- Need comprehensive site crawling with structured output
+- Require dynamic content extraction with JavaScript rendering
+- Want to combine web search with content scraping
+- Need browser automation (clicking, form filling, navigation)
+- Target sites require advanced extraction capabilities
+
+**Integration pattern:**
+```
+mofa-research-2.0: Plan research angles
+      ↓
+mofa-firecrawl: Crawl target sites + Search supplementary sources
+      ↓
+mofa-research-2.0: Cross-reference + Analyze + Synthesize
+```
+
+**Feature comparison:**
+| Feature | mofa-crawler | mofa-firecrawl |
+|---------|--------------|----------------|
+| Single page scrape | ✓ | ✓ |
+| Full-site crawl | ✗ | ✓ |
+| URL mapping | ✗ | ✓ |
+| Web search | ✗ | ✓ |
+| Browser automation | ✗ | ✓ |
+| Cloud browser sessions | ✗ | ✓ |
+| Self-hosted option | ✗ | ✓ |
+
+### mofa-verge-browser
+GUI browser sandbox automation with real visual Chromium, supporting CDP automation, GUI screenshots, and human-in-the-loop intervention.
+
+**Use with mofa-research-2.0 when:**
+- Target sites require visual interaction (captcha, MFA, complex authentication)
+- Need human verification or intervention during research
+- Want visual evidence of page states during research
+- Researching sites with anti-bot measures that need real browser behavior
+- Need to handle popups, downloads, or multi-tab scenarios
+
+**Integration pattern:**
+```
+mofa-research-2.0: Plan research angles
+      ↓
+mofa-verge-browser: Visual browser automation + human intervention when needed
+      ↓
+mofa-research-2.0: Analyze visual evidence and extracted data
+```
+
+**Feature comparison with mofa-firecrawl:**
+| Feature | mofa-firecrawl | mofa-verge-browser |
+|---------|---------------|-------------------|
+| Hosting | Cloud service | Self-hosted (local/Docker) |
+| GUI browser | ✗ | ✓ (Real Chromium with GUI) |
+| Visual screenshot | Basic | GUI-level with browser UI |
+| Human intervention | ✗ | ✓ (noVNC/Xpra sessions) |
+| CDP/Playwright | Limited | Full WebSocket CDP support |
+| Captcha handling | ✗ | ✓ (with human-in-the-loop) |
+| Ideal for | Large-scale crawling | Complex auth, visual tasks |
+
 ### mofa-xhs
 Xiaohongshu (小红书) integration for social media research.
 
@@ -521,4 +581,22 @@ Public API discovery for accessing external data sources.
 - Need weather, finance, news data for research
 - Looking for free data sources without API keys
 - Building data enrichment pipelines
+
+### mofa-crawlee-python
+Web scraping with Crawlee-Python library for structured data extraction.
+
+**Use with mofa-research-2.0 when:**
+- Need to crawl and extract data from websites
+- Target sites have JavaScript-heavy content (SPAs)
+- Require robust scraping with retries and proxy rotation
+- Want exportable datasets (JSON, CSV, Parquet)
+
+**Integration pattern:**
+```
+mofa-research-2.0: Identify data sources
+      ↓
+mofa-crawlee-python: Crawl and extract structured data
+      ↓
+mofa-research-2.0: Analyze extracted data → Research report
+```
 

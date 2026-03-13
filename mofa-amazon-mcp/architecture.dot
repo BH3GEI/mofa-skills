@@ -1,0 +1,54 @@
+digraph AmazonMCPArchitecture {
+    graph [label="Amazon MCP Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(buy/search)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\nParse Intent\nExtract Keywords", fillcolor=lightyellow, style=filled]
+
+    // Search Phase
+    Search [label="Amazon MCP\nsearch_products", fillcolor=lightgreen, style=filled]
+    Results [label="Product Results\nList with prices", shape=cylinder, fillcolor=lightyellow, style=filled]
+
+    // Selection
+    Select [label="User Selection\nChoose product", shape=ellipse, fillcolor=lightblue, style=filled]
+    Details [label="Get Details\nproduct_details", fillcolor=lightcyan, style=filled]
+
+    // Confirmation
+    Confirm [label="Confirm Purchase\nPrice/Budget Check", shape=diamond, fillcolor=lightyellow, style=filled]
+    HITL [label="HITL\nUser Approval", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Payment
+    Payment [label="Fewsats MCP\nL402 Payment", fillcolor=lightpink, style=filled]
+    Budget [label="Budget Check\nFewsats API", shape=cylinder, fillcolor=lightgray, style=filled]
+
+    // Purchase
+    Purchase [label="Amazon MCP\npurchase_product", fillcolor=lightgreen, style=filled]
+    Order [label="Order Confirmation\nTracking Info", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // History
+    History [label="Purchase History\n(Fewsats)", shape=cylinder, fillcolor=lightgray, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Search
+
+    Search -> Results
+    Results -> Select
+
+    Select -> Details
+    Details -> Confirm
+
+    Confirm -> HITL [label="> threshold", color=darkorange]
+    Confirm -> Payment [label="auto-approved", color=darkgreen]
+    HITL -> Payment [label="approved", color=darkgreen]
+    HITL -> Results [label="cancelled", style=dashed, color=gray]
+
+    Payment -> Budget
+    Budget -> Purchase [label="funds OK", color=darkgreen]
+    Budget -> HITL [label="limit exceeded", style=dashed, color=red]
+
+    Purchase -> Order
+    Purchase -> History
+}

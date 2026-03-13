@@ -11,29 +11,74 @@ always: false
 
 Xiaohongshu (小红书, RedNote) integration via xhs-cli.
 
-## Prerequisites
+## Onboarding / 开始使用
 
-Install xhs-cli:
+### 前置要求
+
+1. **安装 xhs-cli**
+   ```bash
+   # 使用 uv (推荐)
+   uv tool install xhs-cli
+
+   # 或使用 pipx
+   pipx install xhs-cli
+
+   # 或使用 pip
+   pip install xhs-cli
+   ```
+
+2. **小红书账号**
+   - 需要在 https://www.xiaohongshu.com 注册并登录过
+   - 建议使用 Chrome 浏览器登录过小红书网页版
+
+3. **认证登录** (三选一)
+
+   **方式 A: 自动提取 Chrome cookies** (推荐)
+   ```bash
+   # 确保 Chrome 已登录小红书
+   xhs login
+   ```
+
+   **方式 B: 手动提供 Cookie**
+   ```bash
+   # 从浏览器开发者工具复制 Cookie
+   xhs login --cookie "a1=xxx; web_session=xxx; ..."
+   ```
+
+   **方式 C: 使用已保存的 Cookie 文件**
+   ```bash
+   # Cookie 将自动保存在 ~/.xhs/cookies.json
+   xhs status
+   ```
+
+4. **验证安装**
+   ```bash
+   xhs status
+   ```
+   预期输出应显示 "Logged in as: [username]"
+
+### 快速开始
 
 ```bash
-uv tool install xhs-cli
-# Or: pipx install xhs-cli
+# 搜索笔记
+xhs search "咖啡" --limit 10
+
+# 查看笔记详情
+xhs read "https://www.xiaohongshu.com/discovery/item/xxx"
+
+# 查看用户信息
+xhs user "用户名"
 ```
 
-## Authentication
+### 故障排除
 
-xhs-cli requires valid cookies to function.
-
-```bash
-# Check login status
-xhs status
-
-# Login (auto-extract Chrome cookies)
-xhs login
-
-# Or provide cookies manually
-xhs login --cookie "a1=..."
-```
+| 问题 | 解决方案 |
+|-----|---------|
+| `xhs: command not found` | 确保 `~/.local/bin` 在 PATH 中，或重新安装 |
+| `Not logged in` | 运行 `xhs login`，确保 Chrome 已登录小红书 |
+| `Cookie expired` | 重新运行 `xhs login` 刷新 Cookie |
+| `Rate limited` | 降低请求频率，添加延迟参数 |
+| 搜索无结果 | 检查关键词，尝试用中文关键词 |
 
 ## Architecture
 

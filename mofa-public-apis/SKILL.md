@@ -9,6 +9,51 @@ always: false
 
 Local-first API discovery with intelligent filtering and recommendations.
 
+## Onboarding / 开始使用
+
+### 前置要求
+
+1. **Python 3.8+**
+   ```bash
+   python3 --version
+   ```
+
+2. **数据源** (本地缓存)
+   - 数据文件: `apis.json` (位于 skill 目录)
+   - 包含 1000+ 公共 API 的元数据
+   - 无需外部 API key
+
+3. **验证安装**
+   ```bash
+   # 检查 Python
+   python3 -c "import json; print('OK')"
+
+   # 检查数据文件
+   ls -la apis.json
+   ```
+
+### 快速开始
+
+```bash
+# 搜索 API
+python3 -c "
+import json
+with open('apis.json') as f:
+    apis = json.load(f)['entries']
+    results = [a for a in apis if 'weather' in a['description'].lower()]
+    for r in results[:5]:
+        print(f\"{r['name']}: {r['description'][:80]}...\")
+"
+```
+
+### 故障排除
+
+| 问题 | 解决方案 |
+|-----|---------|
+| `apis.json not found` | 确保在 skill 目录运行，或指定完整路径 |
+| `json parse error` | 重新下载 apis.json，可能文件损坏 |
+| 搜索结果为空 | 尝试不同的关键词，或使用模糊搜索 |
+
 ## Architecture
 
 ```

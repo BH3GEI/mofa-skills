@@ -1,0 +1,117 @@
+# Amazon MCP Skill - Cursor/Claude Context Rules
+
+When working with this skill, follow these conventions:
+
+## File Organization
+
+- `SKILL.md` - Main skill documentation and workflow
+- `config.toml` - Default configuration
+- `architecture.dot` - System architecture diagram
+- `examples/*.md` - Example shopping sessions
+- `templates/*.md` - Prompt templates
+
+## Shopping Workflow
+
+1. **Parse Intent** → Understand buy vs search vs compare
+2. **Search** → Call Amazon MCP search_products
+3. **Present** → Show results with price/rating
+4. **Select** → User picks product
+5. **Confirm** → Check budget, get approval
+6. **Payment** → Fewsats L402 payment flow
+7. **Purchase** → Amazon MCP purchase_product
+8. **Receipt** → Order confirmation and tracking
+
+## Budget Check Rules
+
+Always check budget BEFORE purchase:
+
+```
+IF product_price > approval_threshold:
+    → HITL: Request explicit user confirmation
+
+IF monthly_spent + product_price > budget_limit:
+    → HITL: Warn about budget exceed
+
+IF product_price > single_purchase_limit:
+    → HITL: Block and explain limit
+```
+
+## Output Format
+
+### Search Results
+
+```markdown
+## Amazon Search Results: {query}
+
+| # | Product | Price | Rating | Prime |
+|---|---------|-------|--------|-------|
+| 1 | {name} | ${price} | ★★★★☆ ({reviews}) | ✓ |
+| 2 | ... | ... | ... | ... |
+
+**Details:**
+1. **{Product Name}** - [View on Amazon]({url})
+   - Price: ${price} (Was: ${original})
+   - Rating: {stars} ({count} reviews)
+   - Features: {bullet points}
+```
+
+### Purchase Confirmation
+
+```markdown
+## Purchase Confirmation
+
+| Item | Value |
+|------|-------|
+| Product | {name} |
+| Price | ${price} |
+| Shipping | {free/$x} |
+| Tax | ${tax} |
+| **Total** | **${total}** |
+| Budget Remaining | ${remaining} |
+
+[Confirm Purchase] [Cancel]
+```
+
+## Safety Rules
+
+### Never Do
+
+- ❌ Purchase without explicit user confirmation (unless under auto_pay threshold)
+- ❌ Exceed budget limits without warning
+- ❌ Hide additional costs (shipping, tax)
+- ❌ Auto-approve purchases over approval_threshold
+- ❌ Skip receipt/confirmation output
+
+### Always Do
+
+- ✅ Show full price breakdown
+- ✅ Confirm before each purchase
+- ✅ Provide order confirmation with tracking
+- ✅ Log purchase to history
+- ✅ Warn about budget status
+
+## MCP Tool Priority
+
+1. `search_products` - Find products
+2. `get_product_details` - Get full info
+3. `purchase_product` - Execute purchase
+4. `Fewsats MCP` - Handle payment
+
+## Error Handling
+
+| Error | Response |
+|-------|----------|
+| Product not found | Suggest alternatives |
+| Out of stock | Notify user, suggest similar |
+| Payment failed | Check Fewsats balance/budget |
+| Budget exceeded | HITL for override decision |
+| Shipping unavailable | Show available options |
+
+## HITL Triggers
+
+Pause and ask user when:
+- Purchase over approval_threshold
+- Budget limit approaching/exceeded
+- Multiple similar options (user preference needed)
+- Shipping address confirmation
+- Payment method selection

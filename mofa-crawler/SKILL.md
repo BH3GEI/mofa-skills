@@ -17,6 +17,58 @@ Cloudflare Browser Rendering Crawl API 集成 —— 一站式网站抓取解决
 >
 > 付费版：$5/月，1000 任务/天，1000 页/任务
 
+## Onboarding / 开始使用
+
+### 前置要求
+
+1. **Cloudflare 账号**
+   - 访问 https://dash.cloudflare.com 注册免费账号
+
+2. **获取 API Token**
+   - 进入 Cloudflare Dashboard → My Profile → API Tokens
+   - 创建 Token，授予以下权限：
+     - `Account:Browser Rendering:Edit`
+     - `Zone:Read` (可选，用于验证域名)
+
+3. **获取 Account ID**
+   - 在 Cloudflare Dashboard 右侧栏找到 **Account ID**
+
+4. **配置环境变量**
+   ```bash
+   export CF_API_TOKEN="your-api-token-here"
+   export CF_ACCOUNT_ID="your-account-id-here"
+   ```
+
+5. **验证配置**
+   ```bash
+   curl -s "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/browser-rendering/crawl" \
+     -H "Authorization: Bearer $CF_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"url":"https://example.com","limit":1}'
+   ```
+
+### 快速开始
+
+```bash
+# 基础爬取 (需要设置环境变量)
+curl -X POST "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/browser-rendering/crawl" \
+  -H "Authorization: Bearer $CF_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "limit": 10
+  }'
+```
+
+### 故障排除
+
+| 问题 | 解决方案 |
+|-----|---------|
+| `Authentication error` | 检查 `CF_API_TOKEN` 是否正确，是否有 Browser Rendering 权限 |
+| `Account not found` | 检查 `CF_ACCOUNT_ID` 是否正确 |
+| `Rate limit exceeded` | 免费版每天 5 个任务，升级到付费版或等待第二天 |
+| `Page limit exceeded` | 单次任务最多 1000 页，减少 `limit` 参数 |
+
 ## Architecture
 
 ```

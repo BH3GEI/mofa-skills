@@ -1,0 +1,58 @@
+digraph MOFACrawleePython {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial"];
+    edge [fontname="Arial"];
+
+    // Color scheme
+    start [fillcolor="#e1f5fe", label="User Request"];
+    requirements [fillcolor="#fff3e0", label="Requirements Analysis"];
+    selector [fillcolor="#fff3e0", label="Crawler Selector"];
+    generator [fillcolor="#fff3e0", label="Code Generation"];
+    validator [fillcolor="#fff3e0", label="Validation"];
+    output [fillcolor="#e8f5e9", label="Complete Crawler Code"];
+
+    // Sub-nodes for requirements
+    req1 [fillcolor="#ffffff", label="Target URLs"];
+    req2 [fillcolor="#ffffff", label="Data Fields"];
+    req3 [fillcolor="#ffffff", label="Scale/Depth"];
+    req4 [fillcolor="#ffffff", label="Anti-bot Needs"];
+
+    // Sub-nodes for crawler types
+    static [fillcolor="#ffffff", label="BeautifulSoupCrawler\n(Static HTML)"];
+    spa [fillcolor="#ffffff", label="PlaywrightCrawler\n(JS-Heavy)"];
+    api [fillcolor="#ffffff", label="HttpCrawler\n(APIs)"];
+
+    // Sub-nodes for code generation
+    imports [fillcolor="#ffffff", label="Imports & Config"];
+    handlers [fillcolor="#ffffff", label="Request Handlers"];
+    extraction [fillcolor="#ffffff", label="Extraction Logic"];
+    export [fillcolor="#ffffff", label="Export & Run"];
+
+    // Edges
+    start -> requirements;
+    requirements -> req1 [style=dashed, arrowhead=none];
+    requirements -> req2 [style=dashed, arrowhead=none];
+    requirements -> req3 [style=dashed, arrowhead=none];
+    requirements -> req4 [style=dashed, arrowhead=none];
+
+    requirements -> selector;
+    selector -> static [label="Static HTML"];
+    selector -> spa [label="JS/SPA"];
+    selector -> api [label="JSON API"];
+
+    static -> generator;
+    spa -> generator;
+    api -> generator;
+
+    generator -> imports [style=dashed, arrowhead=none];
+    generator -> handlers [style=dashed, arrowhead=none];
+    generator -> extraction [style=dashed, arrowhead=none];
+    generator -> export [style=dashed, arrowhead=none];
+
+    generator -> validator;
+    validator -> output;
+
+    // Template library
+    templates [fillcolor="#fce4ec", label="Template Library", shape=ellipse];
+    templates -> generator [style=dashed, label="uses"];
+}

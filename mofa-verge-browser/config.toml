@@ -1,0 +1,94 @@
+# MOFA Verge Browser Configuration
+# GUI browser sandbox automation for AI agents
+
+[verge]
+# Verge Browser configuration
+name = "mofa-verge-browser"
+version = "1.0.0"
+api_url_env = "VERGE_API_URL"
+api_token_env = "VERGE_ADMIN_AUTH_TOKEN"
+
+[sandbox]
+# Default sandbox settings
+default_width = 1440
+default_height = 900
+default_runtime = "xvfb_vnc"  # xvfb_vnc | xpra
+auto_cleanup = false          # 任务完成后自动删除沙箱
+max_sandboxes = 5             # 最大并发沙箱数
+idle_timeout = 1800           # 空闲超时 (秒)
+
+[cdp]
+# CDP automation settings
+connection_timeout = 30       # CDP 连接超时 (秒)
+page_timeout = 30000          # 页面操作超时 (ms)
+navigation_timeout = 30000    # 导航超时 (ms)
+viewport_width = 1440
+viewport_height = 900
+
+[screenshot]
+# Screenshot settings
+default_format = "png"        # png | jpg
+quality = 90                  # JPG 质量 (1-100)
+full_window = false           # 默认是否截取完整窗口
+auto_capture = true           # 关键步骤自动截图
+capture_steps = ["goto", "click", "submit", "error"]
+
+[actions]
+# Actions API settings
+max_actions = 100             # 单次最大 actions 数
+default_wait_ms = 1000        # 默认等待时间 (ms)
+retry_on_fail = true          # 失败时重试
+max_retries = 3               # 最大重试次数
+
+[workspace]
+# File sharing settings
+shared_dir = "./workspace"    # 本地共享目录
+auto_sync = true              # 自动同步文件
+persist_downloads = true      # 保留下载的文件
+
+[human_in_the_loop]
+# Human intervention settings
+enabled = true                # 启用人工接管
+captcha_detection = true      # 自动检测验证码
+mfa_detection = true          # 自动检测 MFA
+session_timeout = 600         # 人工会话超时 (秒)
+prompt_user = true            # 需要用户时提示
+
+[playwright]
+# Playwright specific settings
+headless = false              # 使用 GUI 模式 (Verge 特点)
+args = ["--no-sandbox", "--disable-setuid-sandbox"]
+proxy = ""                    # 代理设置
+user_agent = ""               # 自定义 User-Agent
+
+[runtime.xvfb_vnc]
+# Xvfb + VNC runtime settings
+vnc_quality = 7               # VNC 质量 (1-9)
+vnc_compression = 9           # 压缩级别
+novnc_path = "/noVNC"
+
+[runtime.xpra]
+# Xpra runtime settings
+encoding = "auto"             # 编码方式
+quality = 80                  # 图像质量
+speed = 0                     # 速度/质量平衡
+clipboard = true              # 启用剪贴板同步
+
+[logging]
+# Logging settings
+level = "info"                # debug | info | warn | error
+save_screenshots = true       # 保存截图
+timestamp_format = "%Y-%m-%d %H:%M:%S"
+
+[limits]
+# Resource limits
+max_pages_per_session = 100   # 单次会话最大页面数
+max_file_size_mb = 100        # 最大文件大小
+max_execution_time = 3600     # 最大执行时间 (秒)
+
+[security]
+# Security settings
+block_third_party_cookies = false
+block_ads = false
+isolate_sessions = true       # 沙箱间隔离
+sanitize_downloads = true     # 检查下载文件

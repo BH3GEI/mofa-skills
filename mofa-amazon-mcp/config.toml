@@ -1,0 +1,63 @@
+# MOFA Amazon MCP Configuration
+# For Amazon shopping via MCP with L402 payments
+
+[skill]
+name = "mofa-amazon-mcp"
+version = "1.0.0"
+description = "Amazon shopping via MCP with Fewsats L402 payments"
+
+[amazon]
+# 搜索配置
+max_search_results = 10
+default_category = "All"
+
+# 地区设置
+region = "US"  # US | UK | CA | JP | etc.
+language = "en"
+
+# Prime 设置
+use_prime_only = false  # 是否只显示 Prime 商品
+
+[fewsats]
+# 支付配置
+api_key_env = "FEWSATS_API_KEY"
+
+# 预算控制
+budget_limit = 500.00          # 月度预算上限 (USD)
+approval_threshold = 100.00    # 超过此金额需要人工确认
+single_purchase_limit = 300.00 # 单次购买上限
+
+# 支付选项
+auto_pay_under = 50.00         # 低于此金额自动支付 (需开启)
+require_confirmation = true    # 是否需要确认
+
+[shipping]
+# 配送设置 (可选)
+default_speed = "standard"  # standard | expedited | priority
+
+# 地址簿 (建议通过 Fewsats 配置)
+# default_address_id = "addr_xxx"
+
+[security]
+# 安全设置
+log_all_purchases = true       # 记录所有购买
+send_receipts = true           # 发送收据
+allowed_categories = [         # 允许购买的类别 (可选限制)
+    "Electronics",
+    "Books",
+    "Home",
+    "OfficeProducts"
+]
+
+[search]
+# 搜索优化
+include_out_of_stock = false   # 是否包含缺货商品
+min_rating = 0.0               # 最低评分筛选 (0-5)
+max_price_filter = null        # 最高价格筛选 (null = 无限制)
+sort_by = "relevance"          # relevance | price_low | price_high | rating
+
+[display]
+# 结果显示
+show_images = true             # 是否显示图片链接
+max_description_length = 200   # 描述最大长度
+currency_format = "USD $"      # 货币格式
