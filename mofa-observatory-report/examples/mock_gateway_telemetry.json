@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-03-14T04:45:00Z",
+  "gateway_status": "ONLINE",
+  "uptime_seconds": 124500,
+  "active_nodes": [
+    {
+      "node_id": "mofa-node-alpha",
+      "status": "HEALTHY",
+      "cpu_usage_percent": 45,
+      "memory_usage_mb": 1024,
+      "active_agents": 12
+    },
+    {
+      "node_id": "mofa-node-beta",
+      "status": "HEALTHY",
+      "cpu_usage_percent": 60,
+      "memory_usage_mb": 2048,
+      "active_agents": 25
+    },
+    {
+      "node_id": "mofa-node-gamma",
+      "status": "DEGRADED",
+      "cpu_usage_percent": 95,
+      "memory_usage_mb": 4096,
+      "active_agents": 3,
+      "error": "Memory near capacity"
+    }
+  ],
+  "total_active_agents": 40,
+  "pending_tasks_queue": 150,
+  "network_latency_ms": 42
+}

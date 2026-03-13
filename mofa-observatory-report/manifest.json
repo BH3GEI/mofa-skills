@@ -1,0 +1,8 @@
+{
+  "name": "observatory-report",
+  "version": "1.0.0",
+  "type": "infographic",
+  "author": "MoFA Contributor",
+  "description": "Bridges Gateway telemetry with Infographic synthesis",
+  "entrypoint": "engine_or_cli_command"
+}

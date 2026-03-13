@@ -1,0 +1,15 @@
+[meta]
+name = "cyber-dash"
+display_name = "Cyberpunk Dashboard"
+
+[variants]
+default = "normal"
+
+[variants.normal]
+prompt = """
+You are a highly advanced AI system monitor. Based on the following raw Node/Gateway telemetry data:
+{data}
+
+Design a stunning, futuristic Cyberpunk-themed telemetry dashboard section. 
+Include neon colors (cyan, magenta, electric green), dark backgrounds, and representations of server nodes, active agents metrics, and system health status. Use terminal-style data readouts and glowing graphs.
+"""
