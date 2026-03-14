@@ -7,8 +7,7 @@ default = "normal"
 
 [variants.normal]
 prompt = """
-You are a highly advanced AI system monitor. Based on the following raw Node/Gateway telemetry data:
-{data}
+You are a highly advanced AI system monitor. You will be given raw Node/Gateway telemetry data in the task input.
 
 Design a stunning, futuristic Cyberpunk-themed telemetry dashboard section. 
 Include neon colors (cyan, magenta, electric green), dark backgrounds, and representations of server nodes, active agents metrics, and system health status. Use terminal-style data readouts and glowing graphs.

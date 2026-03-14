@@ -20,26 +20,25 @@ Activate this skill when user says:
 
 ```bash
 # Generate a visual Cyberpunk dashboard report
-mofa infographic --skill mofa-observatory-report --style cyber-dash --out report.png --input gateway_metrics.json
+mofa infographic --style cyber-dash --out report.png --input gateway_metrics.json
 
 # Generate a minimal text summary
-mofa text --skill mofa-observatory-report --style minimal-report --input gateway_metrics.json
+mofa slides --style minimal-report --input gateway_metrics.json
 ```
 
 ## Examples
 
 The skill expects a raw JSON payload from the Gateway/Observatory metrics endpoint. You can find a sample payload in `examples/mock_gateway_telemetry.json`:
 
-```json
+```text
 {
   "gateway_status": "ONLINE",
   "total_active_agents": 40,
-  "pending_tasks_queue": 150,
-  ...
+  "pending_tasks_queue": 150
 }
 ```
 
-This telemetry JSON is injected into the style template's `{data}` placeholder, which the Gemini engine then uses to synthesize either the text report or the dashboard infographic content.
+This telemetry JSON is passed directly to the Gemini engine as the input data (for example, via the section prompt), while the selected style template is used verbatim as a prefix to guide how the text report or dashboard infographic is synthesized.
 
 ## Features
 

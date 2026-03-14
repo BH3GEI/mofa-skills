@@ -1,8 +1,27 @@
 {
-  "name": "observatory-report",
+  "name": "mofa-observatory-report",
   "version": "1.0.0",
   "type": "infographic",
   "author": "MoFA Contributor",
   "description": "Bridges Gateway telemetry with Infographic synthesis",
-  "entrypoint": "engine_or_cli_command"
+  "tools": [
+    {
+      "name": "observatory_report",
+      "description": "Generate an observatory report infographic from gateway telemetry.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "telemetry": {
+            "type": "string",
+            "description": "Raw or preprocessed telemetry data used to generate the report."
+          }
+        },
+        "required": ["telemetry"]
+      }
+    }
+  ],
+  "execution": {
+    "entrypoint": "engine_or_cli_command",
+    "timeout_secs": 600
+  }
 }

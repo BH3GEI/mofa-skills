@@ -8,7 +8,7 @@ default = "normal"
 [variants.normal]
 prompt = """
 You are a senior DevOps engineer analyzing the MoFA Gateway telemetry.
-Data: {data}
+You will be given MoFA Gateway telemetry as input. Use that telemetry to assess the system health.
 
 Provide a very concise, easy-to-read text summary of the system health. Alert on any node failures. Format as a clean markdown bulleted list.
 """
