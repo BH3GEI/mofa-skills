@@ -1,0 +1,54 @@
+digraph GithubArchitecture {
+    graph [label="GitHub CLI Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(PR/issue/CI)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Parse intent\n• Route command", fillcolor=lightyellow, style=filled]
+
+    // Command Router
+    Router [label="Command Router", shape=diamond, fillcolor=lightyellow, style=filled]
+
+    // Commands
+    PR [label="PR Commands\nlist/view/create/merge", fillcolor=lightgreen, style=filled]
+    Issue [label="Issue Commands\nlist/view/create/close", fillcolor=lightgreen, style=filled]
+    CI [label="CI Commands\nlist/view/watch/rerun", fillcolor=lightgreen, style=filled]
+    API [label="API Commands\nrepos/releases/search", fillcolor=lightgreen, style=filled]
+
+    // GH CLI
+    GH [label="gh CLI", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // GitHub API
+    Github [label="GitHub API\napi.github.com", shape=cloud, fillcolor=lightblue, style=filled]
+
+    // Output
+    Output [label="Results\n(text/json)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="Auth\nGH_TOKEN / gh auth", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Router
+
+    Router -> PR [label="PR"]
+    Router -> Issue [label="issue"]
+    Router -> CI [label="CI/CD"]
+    Router -> API [label="API query"]
+
+    PR -> GH
+    Issue -> GH
+    CI -> GH
+    API -> GH
+
+    GH -> Github
+    Github -> Output
+
+    Auth -> GH [style=dashed, color=red]
+    Auth -> Github [style=dashed, color=red]
+
+    // Tips
+    Note [label="Tips:\n--json for machine output\nPipe to jq for filtering", shape=note, fillcolor=lightgray, style=filled]
+    GH -> Note [style=dashed, color=gray]
+}

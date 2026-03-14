@@ -1,0 +1,80 @@
+digraph InfographicArchitecture {
+    graph [label="Infographic Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(topic/data)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Plan sections\n• Select style", fillcolor=lightyellow, style=filled]
+
+    // Style Selection
+    Style [label="Style Selection\n(4 styles)", shape=diamond, fillcolor=lightyellow, style=filled]
+    Cyber [label="cyberpunk-neon\nTech/AI", fillcolor=lightpink, style=filled]
+    Editorial [label="editorial\nMagazine", fillcolor=lightpink, style=filled]
+    Clean [label="clean-light\nBusiness", fillcolor=lightpink, style=filled]
+    Multi [label="multi-panel\nComparison", fillcolor=lightpink, style=filled]
+
+    // Section Variants
+    Sections [label="Section Variants", fillcolor=lightyellow, style=filled]
+    Header [label="Header\nTitle banner", fillcolor=lightgreen, style=filled]
+    Normal [label="Normal\nContent/data", fillcolor=lightgreen, style=filled]
+    Footer [label="Footer\nSources/CTA", fillcolor=lightgreen, style=filled]
+
+    // Generation
+    Gen1 [label="Generate\nSection 1", fillcolor=lightgreen, style=filled]
+    Gen2 [label="Generate\nSection 2", fillcolor=lightgreen, style=filled]
+    GenN [label="Generate\nSection N", fillcolor=lightgreen, style=filled]
+
+    // Refinement
+    Refine [label="Qwen-Edit\nRefinement", fillcolor=lightyellow, style=filled]
+
+    // Gemini
+    Gemini [label="Gemini API\nImage Gen", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // Stitching
+    Stitch [label="Vertical Stitch\nTall image", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Output [label="Infographic PNG\n(unique directory)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="GEMINI_API_KEY\nDASHSCOPE_API_KEY", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Style
+
+    Style -> Cyber [label="tech"]
+    Style -> Editorial [label="reports"]
+    Style -> Clean [label="business"]
+    Style -> Multi [label="comparison"]
+
+    Entry -> Sections
+    Sections -> Header
+    Sections -> Normal
+    Sections -> Footer
+
+    Header -> Gen1
+    Normal -> Gen2
+    Footer -> GenN
+
+    Gen1 -> Gemini
+    Gen2 -> Gemini
+    GenN -> Gemini
+
+    Gen1 -> Refine [style=dashed, label="if --refine"]
+    Gen2 -> Refine [style=dashed]
+    GenN -> Refine [style=dashed]
+
+    Refine -> Stitch
+    Gen1 -> Stitch [style=dashed, label="no refine"]
+
+    Stitch -> Output
+
+    Auth -> Gemini [style=dashed, color=red]
+    Auth -> Refine [style=dashed, color=red]
+
+    // Config
+    Note [label="Sections: 3-5 typical\n16:9 per section\nVertical output", shape=note, fillcolor=lightgray, style=filled]
+    Sections -> Note [style=dashed, color=gray]
+}

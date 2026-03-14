@@ -1,0 +1,72 @@
+digraph CardsArchitecture {
+    graph [label="Cards Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(occasion/message)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Gather preferences\n• Select style", fillcolor=lightyellow, style=filled]
+
+    // Style Selection
+    Style [label="Style Selection\n(8 styles)", shape=diamond, fillcolor=lightyellow, style=filled]
+    CNY1 [label="cny-guochao\nFestive red+gold", fillcolor=lightpink, style=filled]
+    CNY2 [label="cny-shuimo\nElegant ink", fillcolor=lightpink, style=filled]
+    Feng [label="feng-zikai\nMinimal brush", fillcolor=lightpink, style=filled]
+    Laoshu [label="laoshu\nFolk humor", fillcolor=lightpink, style=filled]
+    Lingnan [label="lingnan\nBotanical", fillcolor=lightpink, style=filled]
+    Xianer [label="xianer\nCute monk", fillcolor=lightpink, style=filled]
+
+    // Card Types
+    Cards [label="Card Types", fillcolor=lightyellow, style=filled]
+    Front [label="Front Card\nHero visual", fillcolor=lightgreen, style=filled]
+    Greeting [label="Greeting Card\nMessage", fillcolor=lightgreen, style=filled]
+    Scene [label="Scene Card\nIllustration", fillcolor=lightgreen, style=filled]
+
+    // Generation
+    Gemini [label="Gemini API\nImage Generation", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // Parallel Generation
+    Gen1 [label="Generate\nCard 1", fillcolor=lightgreen, style=filled]
+    Gen2 [label="Generate\nCard 2", fillcolor=lightgreen, style=filled]
+    Gen3 [label="Generate\nCard 3", fillcolor=lightgreen, style=filled]
+
+    // Output
+    Output [label="PNG Cards\n(unique directory)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="GEMINI_API_KEY", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Style
+
+    Style -> CNY1 [label="festive"]
+    Style -> CNY2 [label="elegant"]
+    Style -> Feng [label="tea culture"]
+    Style -> Laoshu [label="humor"]
+    Style -> Lingnan [label="heritage"]
+    Style -> Xianer [label="healing"]
+
+    Entry -> Cards
+    Cards -> Front
+    Cards -> Greeting
+    Cards -> Scene
+
+    Front -> Gen1
+    Greeting -> Gen2
+    Scene -> Gen3
+
+    Gen1 -> Gemini
+    Gen2 -> Gemini
+    Gen3 -> Gemini
+
+    Gen1 -> Output
+    Gen2 -> Output
+    Gen3 -> Output
+
+    Auth -> Gemini [style=dashed, color=red]
+
+    // Config
+    Note [label="mofa cards CLI\n--style --aspect --card-dir", shape=note, fillcolor=lightgray, style=filled]
+    Entry -> Note [style=dashed, color=gray]
+}

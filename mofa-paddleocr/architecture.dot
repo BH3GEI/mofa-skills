@@ -1,0 +1,64 @@
+digraph PaddleOCRArchitecture {
+    graph [label="PaddleOCR Document Parsing Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(PDF/Image)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Validate format\n• Select output", fillcolor=lightyellow, style=filled]
+
+    // Format Check
+    Format [label="Format Check", shape=diamond, fillcolor=lightyellow, style=filled]
+    PDF [label="PDF Input", fillcolor=lightgreen, style=filled]
+    Image [label="Image Input\n(PNG/JPG)", fillcolor=lightgreen, style=filled]
+
+    // PDF Conversion
+    Convert [label="PDF → Images\nPyMuPDF (fitz)", fillcolor=lightcyan, style=filled]
+    Render [label="Render Pages\n2x resolution", fillcolor=lightgreen, style=filled]
+
+    // OCR Pipeline
+    OCR [label="PaddleOCR Pipeline", shape=cylinder, fillcolor=lightcyan, style=filled]
+    Det [label="Text Detection\nDBNet", fillcolor=lightyellow, style=filled]
+    Rec [label="Text Recognition\nCRNN", fillcolor=lightyellow, style=filled]
+    Layout [label="Layout Analysis\n(Optional)", fillcolor=lightyellow, style=filled]
+
+    // Structure
+    Structure [label="Structure Agent\n• Layout detection\n• Reading order", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Markdown [label="Markdown Output\n(pages/headings)", fillcolor=lightgreen, style=filled]
+    JSON [label="JSON Output\n(boxes/confidence)", fillcolor=lightgreen, style=filled]
+    Output [label="Final Output\n(md/json)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Dependencies
+    Deps [label="Dependencies:\npaddlepaddle\npaddleocr\npymupdf", shape=note, fillcolor=lightgray, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Format
+
+    Format -> PDF [label="pdf"]
+    Format -> Image [label="image"]
+
+    PDF -> Convert
+    Convert -> Render
+    Render -> OCR
+    Image -> OCR
+
+    OCR -> Det
+    Det -> Rec
+    Rec -> Layout [style=dashed, label="if enabled"]
+
+    OCR -> Structure
+    Structure -> Markdown
+    Structure -> JSON
+
+    Markdown -> Output
+    JSON -> Output
+
+    OCR -> Deps [style=dashed, color=gray]
+
+    // Languages note
+    Lang [label="Languages:\nch, en, latin", shape=note, fillcolor=lightgreen, style=filled]
+    OCR -> Lang [style=dashed, color=gray]
+}

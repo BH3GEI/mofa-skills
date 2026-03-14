@@ -1,0 +1,47 @@
+digraph DefuddleArchitecture {
+    graph [label="Defuddle Content Extraction Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry Phase
+    User [label="User Request\n(URL or HTML file)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Validate input\n• Determine format\n• Check requirements", fillcolor=lightyellow, style=filled]
+
+    // Extraction Phase
+    Defuddle [label="Defuddle\nnpx defuddle parse", shape=cylinder, fillcolor=lightgreen, style=filled]
+
+    // Format Options
+    Markdown [label="Markdown Output\n--markdown", fillcolor=lightcyan, style=filled]
+    JSON [label="JSON Output\n--json\n(metadata + content)", fillcolor=lightcyan, style=filled]
+    Property [label="Single Property\n--property title/author", fillcolor=lightcyan, style=filled]
+
+    // Post-Process
+    Analyze [label="Analyze Agent\n• Validate quality\n• Clean content\n• Extract metadata", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Output [label="Clean Content\n(markdown/json)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Fallback
+    Fallback [label="Fallback\nfirecrawl/pinchtab", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Defuddle
+
+    Defuddle -> Markdown [label="default"]
+    Defuddle -> JSON [label="metadata"]
+    Defuddle -> Property [label="specific field"]
+
+    Markdown -> Analyze
+    JSON -> Analyze
+    Property -> Analyze
+
+    Analyze -> Output
+
+    Defuddle -> Fallback [label="extraction failed", style=dashed, color=red]
+    Fallback -> Analyze [style=dashed]
+
+    // Notes
+    Note [label="Node.js + npx", shape=note, fillcolor=lightgray, style=filled]
+    Note -> Defuddle [style=dashed, color=gray]
+}

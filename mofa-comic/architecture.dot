@@ -1,0 +1,71 @@
+digraph ComicArchitecture {
+    graph [label="Comic Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(story/topic)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Story plan\n• Panel outline", fillcolor=lightyellow, style=filled]
+
+    // Style Selection
+    Style [label="Style Selection\n(6 styles)", shape=diamond, fillcolor=lightyellow, style=filled]
+    XKCD [label="xkcd\nTech humor", fillcolor=lightpink, style=filled]
+    Manga [label="manga\nAnime style", fillcolor=lightpink, style=filled]
+    Ligne [label="ligne-claire\nTintin style", fillcolor=lightpink, style=filled]
+    Pop [label="pop-art\nBold colors", fillcolor=lightpink, style=filled]
+    Novel [label="graphic-novel\nDark narrative", fillcolor=lightpink, style=filled]
+    Snoopy [label="snoopy\nPeanuts style", fillcolor=lightpink, style=filled]
+
+    // Layout
+    Layout [label="Layout\n(horizontal/vertical/grid)", fillcolor=lightyellow, style=filled]
+
+    // Panel Generation
+    Panel1 [label="Panel 1\nGeneration", fillcolor=lightgreen, style=filled]
+    Panel2 [label="Panel 2\nGeneration", fillcolor=lightgreen, style=filled]
+    PanelN [label="Panel N\nGeneration", fillcolor=lightgreen, style=filled]
+
+    // Optional Refinement
+    Refine [label="Qwen-Edit\nRefinement", fillcolor=lightyellow, style=filled]
+
+    // Stitching
+    Gemini [label="Gemini API\nImage Gen", shape=cylinder, fillcolor=lightcyan, style=filled]
+    Stitch [label="Stitch Panels\nInto comic strip", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Output [label="Comic PNG\n(unique directory)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="GEMINI_API_KEY\nDASHSCOPE_API_KEY", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Style
+
+    Style -> XKCD
+    Style -> Manga
+    Style -> Ligne
+    Style -> Pop
+    Style -> Novel
+    Style -> Snoopy
+
+    Entry -> Layout
+    Layout -> Panel1
+    Layout -> Panel2
+    Layout -> PanelN
+
+    Panel1 -> Gemini
+    Panel2 -> Gemini
+    PanelN -> Gemini
+
+    Panel1 -> Refine [style=dashed, label="if --refine"]
+    Panel2 -> Refine [style=dashed]
+    PanelN -> Refine [style=dashed]
+
+    Refine -> Stitch
+    Panel1 -> Stitch [style=dashed, label="no refine"]
+
+    Stitch -> Output
+
+    Auth -> Gemini [style=dashed, color=red]
+    Auth -> Refine [style=dashed, color=red]
+}

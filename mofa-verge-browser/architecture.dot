@@ -1,0 +1,56 @@
+digraph VergeBrowserArchitecture {
+    graph [label="Verge Browser Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Analyze task\n• Choose mode", fillcolor=lightyellow, style=filled]
+
+    // Sandbox Phase
+    Sandbox [label="Sandbox Manager\nCreate/Pause/Resume/Delete", fillcolor=lightyellow, style=filled]
+    Docker [label="Docker Container\nChromium + GUI", shape=box3d, fillcolor=lightcyan, style=filled]
+
+    // Access Methods
+    VNC [label="VNC/noVNC\nHuman-in-the-loop", fillcolor=lightgreen, style=filled]
+    CDP [label="CDP WebSocket\nPlaywright/Puppeteer", fillcolor=lightgreen, style=filled]
+    Actions [label="Actions API\nJSON commands", fillcolor=lightgreen, style=filled]
+
+    // Automation
+    Automate [label="Automation Agent\n• Navigate\n• Click/Type\n• Screenshot", fillcolor=lightyellow, style=filled]
+
+    // Human Intervention
+    HITL [label="HITL\nCaptcha/MFA", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Output
+    Extract [label="Extract Data\nHTML/Screenshots/Downloads", fillcolor=lightcyan, style=filled]
+    Output [label="Results", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Cleanup
+    Cleanup [label="Cleanup\nPause/Delete sandbox", fillcolor=lightgray, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Sandbox
+
+    Sandbox -> Docker
+    Docker -> VNC
+    Docker -> CDP
+    Docker -> Actions
+
+    VNC -> HITL
+    CDP -> Automate
+    Actions -> Automate
+
+    HITL -> Automate [style=dashed, label="continue"]
+    Automate -> HITL [style=dashed, label="need help"]
+
+    Automate -> Extract
+    Extract -> Output
+
+    Extract -> Cleanup [style=dashed, color=gray]
+
+    // Config
+    Config [label="VERGE_API_URL\nlocalhost:8000", shape=note, fillcolor=lightgray, style=filled]
+    Sandbox -> Config [style=dashed, color=gray]
+}

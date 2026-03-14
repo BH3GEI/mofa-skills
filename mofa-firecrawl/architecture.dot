@@ -1,0 +1,50 @@
+digraph FirecrawlArchitecture {
+    graph [label="Firecrawl Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(URL/query)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Parse intent\n• Select strategy", fillcolor=lightyellow, style=filled]
+
+    // Strategy Selection
+    Strategy [label="Strategy Selection", shape=diamond, fillcolor=lightyellow, style=filled]
+    Scrape [label="Scrape\nSingle page", fillcolor=lightgreen, style=filled]
+    Crawl [label="Crawl\nFull site", fillcolor=lightgreen, style=filled]
+    Map [label="Map\nURL discovery", fillcolor=lightgreen, style=filled]
+    Search [label="Search\nWeb search", fillcolor=lightgreen, style=filled]
+    Browser [label="Browser\nAutomation", fillcolor=lightgreen, style=filled]
+
+    // Execution
+    Firecrawl [label="Firecrawl CLI", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // Process
+    Process [label="Process Agent\n• Extract content\n• Structure data", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Output [label="Results\n(markdown/json)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="Auth\nFIRECRAWL_API_KEY", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Strategy
+
+    Strategy -> Scrape [label="single page"]
+    Strategy -> Crawl [label="full site"]
+    Strategy -> Map [label="list URLs"]
+    Strategy -> Search [label="search web"]
+    Strategy -> Browser [label="dynamic content"]
+
+    Scrape -> Firecrawl
+    Crawl -> Firecrawl
+    Map -> Firecrawl
+    Search -> Firecrawl
+    Browser -> Firecrawl
+
+    Firecrawl -> Process
+    Process -> Output
+
+    Auth -> Firecrawl [style=dashed, color=red]
+}

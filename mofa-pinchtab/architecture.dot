@@ -1,0 +1,51 @@
+digraph PinchtabArchitecture {
+    graph [label="PinchTab Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(URL/list)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Parse URLs\n• Plan extraction", fillcolor=lightyellow, style=filled]
+
+    // Session Management
+    Session [label="Session Manager\nCreate/Manage sessions", fillcolor=lightyellow, style=filled]
+
+    // Parallel Workers
+    Worker1 [label="Session 1\nnav + extract", fillcolor=lightgreen, style=filled]
+    Worker2 [label="Session 2\nnav + extract", fillcolor=lightgreen, style=filled]
+    Worker3 [label="Session N\nnav + extract", fillcolor=lightgreen, style=filled]
+
+    // PinchTab API
+    Pinchtab [label="PinchTab API\nlocalhost:9867", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // Chrome
+    Chrome [label="Chrome Instances\n(headless/headed)", shape=box3d, fillcolor=lightyellow, style=filled]
+
+    // Results
+    Collect [label="Collect Results\nMerge outputs", fillcolor=lightyellow, style=filled]
+    Output [label="Extracted Content\n(text/json)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Session
+
+    Session -> Worker1
+    Session -> Worker2
+    Session -> Worker3 [style=dashed]
+
+    Worker1 -> Pinchtab
+    Worker2 -> Pinchtab
+    Worker3 -> Pinchtab [style=dashed]
+
+    Pinchtab -> Chrome
+
+    Worker1 -> Collect
+    Worker2 -> Collect
+    Worker3 -> Collect [style=dashed]
+
+    Collect -> Output
+
+    // Token efficiency note
+    Note [label="Token Efficient:\n~800 tokens/page", shape=note, fillcolor=lightgreen, style=filled]
+    Pinchtab -> Note [style=dashed, color=gray]
+}
