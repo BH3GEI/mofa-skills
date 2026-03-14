@@ -1,0 +1,65 @@
+digraph VideolizerArchitecture {
+    graph [label="Videolizer Subtitle Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(subtitles)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Get script\n• Get audio", fillcolor=lightyellow, style=filled]
+
+    // Inputs
+    Script [label="Script Text\n(.txt file)", fillcolor=lightyellow, style=filled]
+    Audio [label="Audio File\n(.wav/.mp3)", fillcolor=lightyellow, style=filled]
+
+    // Mode Selection
+    Mode [label="Mode Selection", shape=diamond, fillcolor=lightyellow, style=filled]
+    Whisper [label="Whisper Mode\nWord-level timestamps", fillcolor=lightgreen, style=filled]
+    Basic [label="Basic Mode\nEven distribution", fillcolor=lightgreen, style=filled]
+
+    // Tools
+    WhisperLib [label="openai-whisper\n(Optional)", shape=cylinder, fillcolor=lightcyan, style=filled]
+    MoviePy [label="moviepy\nDuration calc", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // Generation
+    Generate [label="Generate SRT\nTiming + Text", fillcolor=lightyellow, style=filled]
+
+    // Optional Burn
+    Burn [label="Burn Subtitles\nffmpeg overlay", fillcolor=lightgreen, style=filled]
+    FFmpeg [label="ffmpeg\nVideo processing", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // Output
+    SRT [label="SRT File\nSubtitles only", shape=ellipse, fillcolor=lightblue, style=filled]
+    Video [label="Video with\nSubtitles", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Fallback
+    Fallback [label="Fallback\nAlways produce valid SRT", fillcolor=lightgray, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Script
+    Entry -> Audio
+
+    Script -> Mode
+    Audio -> Mode
+
+    Mode -> Whisper [label="whisper available"]
+    Mode -> Basic [label="fallback"]
+
+    Whisper -> WhisperLib
+    Basic -> MoviePy
+
+    WhisperLib -> Generate
+    MoviePy -> Generate
+
+    Generate -> Fallback [style=dashed, label="on error"]
+    Fallback -> SRT
+
+    Generate -> SRT
+    SRT -> Burn [style=dashed, label="optional"]
+    Burn -> FFmpeg
+    FFmpeg -> Video
+
+    // Config
+    Config [label="Config:\nVIDEOLIZER_MODE\nWHISPER_MODEL\nWORDS_PER_GROUP", shape=note, fillcolor=lightgray, style=filled]
+    Mode -> Config [style=dashed, color=gray]
+}

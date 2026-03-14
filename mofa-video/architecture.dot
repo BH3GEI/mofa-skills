@@ -1,0 +1,20 @@
+digraph VideoArchitecture {
+    graph [label="Video Skill Architecture (Under Development)", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n(Placeholder)", fillcolor=lightyellow, style=filled]
+
+    // Development
+    Dev [label="Under Development\nComing Soon", shape=octagon, fillcolor=lightsalmon, style=filled]
+
+    // Output
+    Output [label="Video Output\n(TBD)", shape=ellipse, fillcolor=lightgray, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Dev
+    Dev -> Output [style=dashed, color=gray]
+}

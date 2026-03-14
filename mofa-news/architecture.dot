@@ -1,0 +1,63 @@
+digraph NewsArchitecture {
+    graph [label="News Digest Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Request\n(news briefing)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Entry Agent\n• Select category\n• Plan sources", fillcolor=lightyellow, style=filled]
+
+    // RSS Sources
+    Sources [label="RSS Sources", fillcolor=lightyellow, style=filled]
+    Google [label="Google News\nTech/World", fillcolor=lightgreen, style=filled]
+    HN [label="Hacker News\nTop stories", fillcolor=lightgreen, style=filled]
+    Other [label="Other Feeds\nCustom sources", fillcolor=lightgreen, style=filled]
+
+    // Fetch
+    Fetch [label="Fetch Headlines\ncurl / web_fetch", fillcolor=lightcyan, style=filled]
+
+    // Process
+    Rank [label="Rank & Filter\n• Recency\n• Credibility", fillcolor=lightyellow, style=filled]
+
+    // Deep Read
+    DeepRead [label="Deep Read\nTop articles", fillcolor=lightgreen, style=filled]
+
+    // Synthesize
+    Synthesize [label="Synthesize Agent\n• Summarize\n• Structure\n• Format", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Output [label="News Digest\nMarkdown report", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Categories
+    Categories [label="Categories", fillcolor=lightgray, style=filled]
+    Tech [label="Technology", fillcolor=lightpink, style=filled]
+    World [label="World News", fillcolor=lightpink, style=filled]
+    Business [label="Business", fillcolor=lightpink, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Sources
+
+    Sources -> Google
+    Sources -> HN
+    Sources -> Other
+
+    Google -> Fetch
+    HN -> Fetch
+    Other -> Fetch
+
+    Fetch -> Rank
+    Rank -> DeepRead [label="top stories"]
+
+    DeepRead -> Synthesize
+    Synthesize -> Output
+
+    Entry -> Categories [style=dashed]
+    Categories -> Tech
+    Categories -> World
+    Categories -> Business
+
+    // Deep research
+    Note [label="Deep Research:\nUse web_search +\nread_file for\nfollow-up", shape=note, fillcolor=lightgreen, style=filled]
+    Output -> Note [style=dashed, color=gray]
+}
