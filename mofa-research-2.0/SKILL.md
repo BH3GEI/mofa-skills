@@ -558,6 +558,35 @@ mofa-research-2.0: Analyze visual evidence and extracted data
 | Captcha handling | ✗ | ✓ (with human-in-the-loop) |
 | Ideal for | Large-scale crawling | Complex auth, visual tasks |
 
+### mofa-pinchtab
+Lightweight AI browser control via HTTP API with token-efficient text extraction (~800 tokens/page) and multi-instance parallel processing.
+
+**Use with mofa-research-2.0 when:**
+- Need token-efficient content extraction (cheaper than screenshots by 5-13x)
+- Want lightweight local browser control without Docker complexity
+- Need parallel multi-instance processing for batch URL extraction
+- Require fast HTTP API-based automation
+
+**Integration pattern:**
+```
+mofa-research-2.0: Plan research angles
+      ↓
+mofa-pinchtab: Parallel extraction of content from multiple sources
+      ↓
+mofa-research-2.0: Analyze extracted text → Research report
+```
+
+**Feature comparison:**
+| Feature | mofa-firecrawl | mofa-verge-browser | mofa-pinchtab |
+|---------|---------------|-------------------|---------------|
+| Hosting | Cloud | Self-hosted (Docker) | Local binary |
+| Setup complexity | Low | High | Low |
+| Token efficiency | Medium | Low | **High** (~800t/page) |
+| Multi-instance | ✗ | ✓ | ✓ |
+| GUI browser | ✗ | ✓ | ✗ |
+| Human intervention | ✗ | ✓ | ✗ |
+| Best for | Scale | Complex auth | **Token-efficient extraction** |
+
 ### mofa-xhs
 Xiaohongshu (小红书) integration for social media research.
 

@@ -1,0 +1,102 @@
+# MOFA PinchTab Configuration
+# Lightweight AI browser control via HTTP API
+
+[pinchtab]
+# PinchTab configuration
+name = "mofa-pinchtab"
+version = "1.0.0"
+api_url_env = "PINCHTAB_API_URL"
+chrome_path_env = "PINCHTAB_CHROME_PATH"
+
+[server]
+# Server connection settings
+default_host = "127.0.0.1"
+default_port = 9867
+connection_timeout = 30
+request_timeout = 60
+
+[browser]
+# Browser settings
+default_headless = true
+default_wait = 3000
+user_agent = ""
+window_width = 1280
+window_height = 720
+args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+
+[sessions]
+# Session management
+max_concurrent = 10
+auto_cleanup = true
+idle_timeout = 300
+persist_profile = false
+
+[extraction]
+# Content extraction settings
+format = "text"              # text | html | markdown
+default_selector = "body"
+include_metadata = true
+token_estimate_ratio = 0.25  # chars to tokens ratio (rough estimate)
+
+[navigation]
+# Navigation settings
+default_timeout = 30000      # ms
+navigation_timeout = 30000   # ms
+wait_until = "networkidle"   # load | domcontentloaded | networkidle
+
+[snapshot]
+# Snapshot settings
+interactive = true
+compact = true
+include_screenshot = false
+screenshot_format = "png"
+screenshot_quality = 90
+
+[interaction]
+# Element interaction
+click_wait = 2000            # ms after click
+type_delay = 50              # ms between keystrokes
+scroll_amount = 500          # pixels
+
+[parallel]
+# Parallel processing
+enabled = true
+max_workers = 5
+delay_between_requests = 1000  # ms
+rate_limit = 10               # requests per minute per site
+
+[output]
+# Output settings
+base_dir = "./pinchtab"
+save_text = true
+save_screenshots = false
+save_structured = true
+save_logs = true
+
+[logging]
+# Logging settings
+level = "info"               # debug | info | warn | error
+log_requests = true
+log_responses = false
+max_log_size_mb = 10
+
+[limits]
+# Resource limits
+max_pages_per_session = 100
+max_extract_length = 100000  # chars
+max_screenshot_size_mb = 5
+memory_limit_mb = 512
+
+[retry]
+# Retry configuration
+max_retries = 3
+retry_delay = 1000           # ms
+retry_on_timeout = true
+retry_on_500 = true
+
+[performance]
+# Performance tuning
+enable_caching = true
+cache_ttl = 300              # seconds
+compress_text = false
+pool_connections = true
