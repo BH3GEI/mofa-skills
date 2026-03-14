@@ -85,6 +85,19 @@ Response: {"access": "...", "refresh": "..."}
 | `/api/podcasts/creator/episodes/` | GET | 我的单集 | 是 |
 | `/api/podcasts/creator/generation-queue/` | GET | 生成队列 | 是 |
 
+#### 脚本管理 (Scripts)
+| 端点 | 方法 | 说明 | 认证 |
+|------|------|------|------|
+| `/api/podcasts/episodes/<id>/update-script/` | PUT | 更新单集脚本 | 是 |
+| `/api/podcasts/script-sessions/` | GET | 脚本会话列表 | 是 |
+| `/api/podcasts/script-sessions/` | POST | 创建脚本会话 | 是 |
+| `/api/podcasts/script-sessions/<id>/` | GET | 会话详情 | 是 |
+| `/api/podcasts/script-sessions/<id>/` | PUT | 更新会话 | 是 |
+| `/api/podcasts/script-sessions/<id>/` | DELETE | 删除会话 | 是 |
+| `/api/podcasts/script-sessions/<id>/chat/` | POST | AI对话生成脚本 | 是 |
+| `/api/podcasts/script-sessions/<id>/upload/` | POST | 上传参考文件 | 是 |
+| `/api/podcasts/script-sessions/<id>/finalize/` | POST | 会转为单集 | 是 |
+
 ### 3. 搜索 API (`/api/search/`)
 
 | 端点 | 方法 | 说明 |
@@ -150,6 +163,22 @@ Response: {"access": "...", "refresh": "..."}
 }
 ```
 
+### ScriptSession (脚本会话)
+```json
+{
+  "id": 1,
+  "title": "AI话题讨论",
+  "description": "讨论AI最新进展",
+  "content_type": "podcast",
+  "current_script": "【主持人】大家好...\n【嘉宾】今天我们来聊聊...",
+  "script_versions": [
+    {"version": 1, "script": "...", "timestamp": "2026-03-14T10:00:00Z"}
+  ],
+  "uploaded_files": [...],
+  "created_at": "2026-03-14T09:00:00Z"
+}
+```
+
 ## 使用示例
 
 ### Python
@@ -182,6 +211,29 @@ new_show = requests.post(
     headers=headers,
     json={"title": "新节目", "description": "...", "content_type": "podcast"}
 ).json()
+
+# 6. 创建脚本会话并 AI 生成脚本
+session = requests.post(
+    f"{BASE_URL}/podcasts/script-sessions/",
+    headers=headers,
+    json={"title": "AI话题", "description": "讨论AI", "content_type": "podcast"}
+).json()
+
+# 7. AI 对话生成脚本
+chat = requests.post(
+    f"{BASE_URL}/podcasts/script-sessions/{session['id']}/chat/",
+    headers=headers,
+    json={"message": "帮我写一个关于Claude的播客脚本"}
+).json()
+
+# 8. 更新单集脚本（支持 Markdown 格式，使用【角色名】标签）
+script = """【主持人】大家好，欢迎收听本期节目
+【嘉宾】今天我们来聊聊AI的最新进展..."""
+requests.put(
+    f"{BASE_URL}/podcasts/episodes/123/update-script/",
+    headers=headers,
+    json={"script": script}
+)
 ```
 
 ### cURL

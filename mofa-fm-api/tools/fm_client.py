@@ -41,6 +41,22 @@ class MoFAFMClient:
         resp.raise_for_status()
         return resp.json()
 
+    def _put(self, path: str, data: Dict, auth: bool = False) -> Dict:
+        """PUT 请求"""
+        url = urljoin(self.BASE_URL + "/", path.lstrip("/"))
+        resp = self.session.put(url, headers=self._headers(auth), json=data)
+        resp.raise_for_status()
+        return resp.json()
+
+    def _delete(self, path: str, auth: bool = False) -> Dict:
+        """DELETE 请求"""
+        url = urljoin(self.BASE_URL + "/", path.lstrip("/"))
+        resp = self.session.delete(url, headers=self._headers(auth))
+        resp.raise_for_status()
+        if resp.status_code != 204:
+            return resp.json()
+        return {"success": True}
+
     # ========== 认证 ==========
 
     def register(self, username: str, email: str, password: str) -> Dict:
@@ -58,8 +74,11 @@ class MoFAFMClient:
             "username": username,
             "password": password
         })
+        # 支持两种返回格式: {"access": "..."} 或 {"tokens": {"access": "..."}}
         if "access" in result:
             self.access_token = result["access"]
+        elif "tokens" in result and "access" in result["tokens"]:
+            self.access_token = result["tokens"]["access"]
         return result
 
     def me(self) -> Dict:
@@ -154,6 +173,119 @@ class MoFAFMClient:
         """获取生成队列"""
         return self._get("/podcasts/creator/generation-queue/", auth=True)
 
+    # ========== 脚本管理 ==========
+
+    def update_episode_script(self, episode_id: int, script: str) -> Dict:
+        """
+        更新单集脚本
+
+        Args:
+            episode_id: 单集 ID
+            script: Markdown 格式脚本内容，支持 【角色名】标签
+
+        Returns:
+            更新后的单集详情
+        """
+        return self._put(f"/podcasts/episodes/{episode_id}/update-script/", {
+            "script": script
+        }, auth=True)
+
+    # ========== 脚本会话 (ScriptSession) ==========
+
+    def list_script_sessions(self) -> List[Dict]:
+        """获取我的脚本会话列表"""
+        result = self._get("/podcasts/script-sessions/", auth=True)
+        return result if isinstance(result, list) else result.get("results", [])
+
+    def get_script_session(self, session_id: int) -> Dict:
+        """获取脚本会话详情"""
+        return self._get(f"/podcasts/script-sessions/{session_id}/", auth=True)
+
+    def create_script_session(self, title: str, description: str = "", content_type: str = "podcast") -> Dict:
+        """
+        创建脚本会话
+
+        Args:
+            title: 会话标题
+            description: 会话描述
+            content_type: 内容类型 (podcast, debate, conference)
+
+        Returns:
+            创建的会话详情
+        """
+        return self._post("/podcasts/script-sessions/", {
+            "title": title,
+            "description": description,
+            "content_type": content_type
+        }, auth=True)
+
+    def update_script_session(self, session_id: int, title: str = None, description: str = None) -> Dict:
+        """更新脚本会话"""
+        data = {}
+        if title is not None:
+            data["title"] = title
+        if description is not None:
+            data["description"] = description
+        return self._put(f"/podcasts/script-sessions/{session_id}/", data, auth=True)
+
+    def delete_script_session(self, session_id: int) -> Dict:
+        """删除脚本会话"""
+        return self._delete(f"/podcasts/script-sessions/{session_id}/", auth=True)
+
+    def chat_script_session(self, session_id: int, message: str) -> Dict:
+        """
+        与 AI 对话生成或修改脚本
+
+        Args:
+            session_id: 会话 ID
+            message: 用户消息
+
+        Returns:
+            AI 响应，包含生成的脚本
+        """
+        return self._post(f"/podcasts/script-sessions/{session_id}/chat/", {
+            "message": message
+        }, auth=True)
+
+    def upload_script_reference(self, session_id: int, file_path: str, description: str = "") -> Dict:
+        """
+        上传参考文件到脚本会话
+
+        Args:
+            session_id: 会话 ID
+            file_path: 本地文件路径
+            description: 文件描述
+
+        Returns:
+            上传结果
+        """
+        url = urljoin(self.BASE_URL + "/", f"podcasts/script-sessions/{session_id}/upload/")
+        headers = {"Authorization": f"Bearer {self.access_token}"} if self.access_token else {}
+
+        with open(file_path, 'rb') as f:
+            files = {'file': (os.path.basename(file_path), f)}
+            data = {'description': description}
+            resp = self.session.post(url, headers=headers, data=data, files=files)
+            resp.raise_for_status()
+            return resp.json()
+
+    def finalize_script_session(self, session_id: int, show_slug: str, title: str = None) -> Dict:
+        """
+        将脚本会话转换为播客单集
+
+        Args:
+            session_id: 脚本会话 ID
+            show_slug: 目标节目 slug
+            title: 单集标题（可选，默认使用会话标题）
+
+        Returns:
+            创建的单集详情
+        """
+        data = {"show_slug": show_slug}
+        if title:
+            data["title"] = title
+        return self._post(f"/podcasts/script-sessions/{session_id}/finalize/", data, auth=True)
+
 
 # ========== CLI 接口 ==========
 
@@ -165,7 +297,9 @@ def main():
     parser.add_argument("action", choices=[
         "health", "login", "me", "shows", "episodes", "trending-sources",
         "trending", "search", "search-suggestions", "popular-searches",
-        "comments", "create-comment", "my-shows", "generation-queue"
+        "comments", "create-comment", "my-shows", "generation-queue",
+        "update-script", "script-sessions", "create-script-session",
+        "chat-script-session", "upload-script-file"
     ])
     parser.add_argument("--username", "-u")
     parser.add_argument("--password", "-p")
@@ -175,6 +309,14 @@ def main():
     parser.add_argument("--episode-id", "-e", type=int, help="单集 ID")
     parser.add_argument("--text", help="评论内容")
     parser.add_argument("--show-slug", help="节目 slug")
+
+    # 脚本相关参数
+    parser.add_argument("--session-id", type=int, help="脚本会话 ID")
+    parser.add_argument("--script", help="脚本内容（文件路径或直接文本）")
+    parser.add_argument("--session-title", help="脚本会话标题")
+    parser.add_argument("--session-desc", help="脚本会话描述")
+    parser.add_argument("--file-path", help="要上传的文件路径")
+    parser.add_argument("--content-type", default="podcast", help="内容类型 (podcast/debate/conference)")
 
     args = parser.parse_args()
 
@@ -213,6 +355,45 @@ def main():
             result = client.my_shows()
         elif args.action == "generation-queue":
             result = client.generation_queue()
+
+        # 脚本管理
+        elif args.action == "update-script":
+            if not args.episode_id or not args.script:
+                result = {"error": "需要 --episode-id 和 --script 参数"}
+            elif os.path.isfile(args.script):
+                with open(args.script, 'r', encoding='utf-8') as f:
+                    script_content = f.read()
+                result = client.update_episode_script(args.episode_id, script_content)
+            else:
+                result = client.update_episode_script(args.episode_id, args.script)
+
+        elif args.action == "script-sessions":
+            result = client.list_script_sessions()
+
+        elif args.action == "create-script-session":
+            if not args.session_title:
+                result = {"error": "需要 --session-title 参数"}
+            else:
+                result = client.create_script_session(
+                    args.session_title,
+                    args.session_desc or "",
+                    args.content_type
+                )
+
+        elif args.action == "chat-script-session":
+            if not args.session_id or not args.text:
+                result = {"error": "需要 --session-id 和 --text 参数"}
+            else:
+                result = client.chat_script_session(args.session_id, args.text)
+
+        elif args.action == "upload-script-file":
+            if not args.session_id or not args.file_path:
+                result = {"error": "需要 --session-id 和 --file-path 参数"}
+            elif not os.path.isfile(args.file_path):
+                result = {"error": f"文件不存在: {args.file_path}"}
+            else:
+                result = client.upload_script_reference(args.session_id, args.file_path, args.text or "")
+
         else:
             result = {"error": "Unknown action"}
 

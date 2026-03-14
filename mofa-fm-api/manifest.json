@@ -28,7 +28,8 @@
       "auth",
       "podcasts",
       "search",
-      "interactions"
+      "interactions",
+      "scripts"
     ]
   }
 }
