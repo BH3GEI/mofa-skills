@@ -1,0 +1,29 @@
+# MoFA Memory Configuration
+# All values here are defaults. Override with environment variables where noted.
+
+[memory]
+name = "mofa-memory"
+version = "1.0.0"
+
+[storage]
+# SQLite database path.
+# Override with: MOFA_MEMORY_DB=/path/to/memory.db
+db_path = "~/.mofa/memory.db"
+
+[embedding]
+# OpenAI embedding model. text-embedding-3-small produces 1536-dimensional vectors.
+# Cost: ~$0.00002 per 1K tokens (very cheap — a full research report costs < $0.001)
+model = "text-embedding-3-small"
+dimensions = 1536
+
+# Base URL for the OpenAI-compatible embeddings endpoint.
+# Override with: OPENAI_BASE_URL=https://your-gateway.com
+# Supports r9s.ai, OpenRouter, Azure OpenAI, and any OpenAI-compatible API.
+base_url = "https://api.openai.com"
+
+[retrieval]
+# Default number of results returned by retrieve_memory
+default_top_k = 5
+# Default minimum cosine similarity (0.0–1.0). 0.7 is a good balance.
+# Lower for broader recall, raise for stricter precision.
+default_min_score = 0.7

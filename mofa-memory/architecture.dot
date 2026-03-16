@@ -1,0 +1,93 @@
+digraph MemoryArchitecture {
+    graph [
+        label="MoFA Memory Skill Architecture"
+        fontsize=14
+        fontname="Helvetica"
+        rankdir=LR
+    ]
+    node [fontname="Helvetica" fontsize=10 shape=box style=filled]
+    edge [fontname="Helvetica" fontsize=9]
+
+    // ── Callers ──────────────────────────────────────────────────────────────
+    Caller [
+        label="Calling Skill\n(mofa-research, mofa-crawler,\nor any other skill)"
+        shape=ellipse
+        fillcolor=lightblue
+    ]
+
+    // ── Binary entry point ───────────────────────────────────────────────────
+    Dispatch [
+        label="mofa-memory binary\ntool name via argv[1]\nJSON payload on stdin"
+        fillcolor=lightyellow
+    ]
+
+    // ── Four tools ───────────────────────────────────────────────────────────
+    Store [
+        label="store_memory\n─────────────────\n1. validate content + tags\n2. embed via OpenAI API\n3. INSERT INTO memories"
+        fillcolor=lightgreen
+    ]
+    Retrieve [
+        label="retrieve_memory\n─────────────────\n1. embed query\n2. load all rows from SQLite\n3. cosine similarity each\n4. sort + filter + top_k"
+        fillcolor=lightgreen
+    ]
+    Clear [
+        label="clear_memory\n─────────────────\ntag filter → DELETE\nor DELETE all"
+        fillcolor=lightgreen
+    ]
+    List [
+        label="list_memories\n─────────────────\ntag filter → SELECT\nformat id/tags/preview"
+        fillcolor=lightgreen
+    ]
+
+    // ── External dependency ───────────────────────────────────────────────────
+    OpenAI [
+        label="OpenAI API\ntext-embedding-3-small\n1536 dimensions\n(OPENAI_BASE_URL)"
+        shape=cylinder
+        fillcolor=lightcyan
+    ]
+
+    // ── Storage ───────────────────────────────────────────────────────────────
+    SQLite [
+        label="SQLite\n~/.mofa/memory.db\n(MOFA_MEMORY_DB)\n─────────────────\ntable: memories\n  id, content, tags\n  source, embedding\n  created_at"
+        shape=cylinder
+        fillcolor=lightyellow
+    ]
+
+    // ── Output ────────────────────────────────────────────────────────────────
+    Output [
+        label="JSON Response\n{output: ..., success: true/false}"
+        shape=ellipse
+        fillcolor=lightblue
+    ]
+
+    // ── Config note ───────────────────────────────────────────────────────────
+    Config [
+        label="Environment Variables\n─────────────────────\nOPENAI_API_KEY (required)\nOPENAI_BASE_URL (optional)\nMOFA_MEMORY_DB (optional)"
+        shape=note
+        fillcolor=lightgray
+    ]
+
+    // ── Edges ─────────────────────────────────────────────────────────────────
+    Caller -> Dispatch
+
+    Dispatch -> Store     [label="store_memory"]
+    Dispatch -> Retrieve  [label="retrieve_memory"]
+    Dispatch -> Clear     [label="clear_memory"]
+    Dispatch -> List      [label="list_memories"]
+
+    Store    -> OpenAI    [label="embed content"]
+    Retrieve -> OpenAI    [label="embed query"]
+
+    Store    -> SQLite    [label="INSERT"]
+    Retrieve -> SQLite    [label="SELECT all"]
+    Clear    -> SQLite    [label="DELETE"]
+    List     -> SQLite    [label="SELECT"]
+
+    Store    -> Output
+    Retrieve -> Output
+    Clear    -> Output
+    List     -> Output
+
+    Config -> OpenAI [style=dashed color=gray]
+    Config -> SQLite [style=dashed color=gray]
+}

@@ -1,0 +1,86 @@
+{
+  "name": "mofa-memory",
+  "version": "1.0.0",
+  "author": "hagency",
+  "description": "Persistent vector memory — store and retrieve knowledge across agent runs using SQLite and OpenAI embeddings",
+  "type": "memory",
+  "timeout_secs": 60,
+  "requires_network": true,
+  "tools": [
+    {
+      "name": "store_memory",
+      "description": "Embed content with OpenAI text-embedding-3-small and persist it to a local SQLite database with tags and an optional source URL. Returns the assigned memory ID. Use after research, crawling, or any task where results should survive across sessions.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Text content to embed and store (e.g. a research report, key fact, or document excerpt)"
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Tags for categorizing and filtering this memory (e.g. ['research', 'ai', 'gpt5'])"
+          },
+          "source": {
+            "type": "string",
+            "description": "Optional source URL or file path for this content"
+          }
+        },
+        "required": ["content", "tags"]
+      }
+    },
+    {
+      "name": "retrieve_memory",
+      "description": "Semantic search over stored memories using cosine similarity on OpenAI embeddings. Returns the top-k most relevant memories above a score threshold, sorted by relevance. Use before starting research to surface prior work on the same topic.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural language query to search for semantically similar stored memories"
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Maximum number of results to return. Default: 5",
+            "default": 5
+          },
+          "min_score": {
+            "type": "number",
+            "description": "Minimum cosine similarity score (0.0–1.0). Default: 0.7",
+            "default": 0.7
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "clear_memory",
+      "description": "Delete stored memories. If tags are provided, only memories with at least one matching tag are deleted. If no tags are provided, ALL memories are cleared.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Optional tag filter. Omit to delete all memories."
+          }
+        }
+      }
+    },
+    {
+      "name": "list_memories",
+      "description": "List stored memories with id, tags, source, creation time, and an 80-character content preview. Optionally filter by tags.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Optional tag filter. Only memories with at least one matching tag are returned."
+          }
+        }
+      }
+    }
+  ]
+}

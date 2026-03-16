@@ -371,6 +371,51 @@ Save to: `./research/{query-slug}/kb/analysis.md`
 }
 ```
 
+## Phase 5.5: Memory Persistence (mofa-memory integration)
+
+This phase completes the `ResearchMemory` node shown in `architecture.dot`. It has no extra compute cost — it calls `mofa-memory` which runs in milliseconds (SQLite read/write) after the embedding API call.
+
+### Pre-Research Recall (before Phase 1)
+
+Before generating research angles, call `retrieve_memory` to surface any prior research on the same topic:
+
+```json
+{"query": "{{ORIGINAL_USER_QUERY}}", "top_k": 3, "min_score": 0.75}
+```
+
+If results are returned with `score >= 0.75`, present them to the user:
+
+> "I found prior research on this topic from {created_at} (relevance: {score}). Shall I build on it or start fresh?"
+
+If the user wants to build on it, include the prior report content in the Entry Agent's context for Phase 1.
+
+### Post-Synthesis Persistence (after Phase 5)
+
+After the report is written to `./research/{slug}/report.md`, persist it to long-term memory.
+
+**Persist the final report:**
+```json
+{
+  "content": "<full text read from ./research/{query-slug}/report.md>",
+  "tags": ["{query-slug}", "{primary-topic}", "research-report"],
+  "source": "./research/{query-slug}/report.md"
+}
+```
+
+**Persist the knowledge base:**
+```json
+{
+  "content": "<full text read from ./research/{query-slug}/kb/merged_outputs.md>",
+  "tags": ["{query-slug}", "{primary-topic}", "kb-cache"],
+  "source": "./research/{query-slug}/kb/merged_outputs.md"
+}
+```
+
+**Requires:** `mofa-memory` skill installed and `OPENAI_API_KEY` available.
+**Skip silently** if `mofa-memory` binary is not found — memory is optional, research always completes.
+
+---
+
 ## User Output (Simplified)
 
 **During research, ONLY show user:**
@@ -481,6 +526,24 @@ With 4-8 parallel workers:
 | Plan Mode | No | TodoList-ready |
 
 ## Related Skills
+
+### mofa-memory
+
+Persistent vector memory across agent runs. Stores research reports in SQLite with OpenAI embeddings for semantic recall in future sessions.
+
+**Use with mofa-research-2.0 when:**
+- Running repeated research on related topics (avoids redundant work)
+- Building a knowledge base over multiple research sessions
+- Wanting to detect prior research before starting a new investigation
+
+**Integration pattern:**
+```
+mofa-memory: retrieve_memory(query) → surface prior research (optional)
+      ↓
+mofa-research-2.0: Plan → Discover → Analyze → Synthesize → Report
+      ↓
+mofa-memory: store_memory(report + kb) → persist for future sessions
+```
 
 ### mofa-crawler
 Web crawling via Cloudflare Browser Rendering API for data acquisition.

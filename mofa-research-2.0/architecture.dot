@@ -21,14 +21,15 @@ digraph DeepResearchArchitecture {
     Synthesize [label="Synthesize Agent\nGenerate Report", fillcolor=lightpink, style=filled]
     Report [label="Final Report\n(with citations)", shape=ellipse, fillcolor=lightblue, style=filled]
 
-    // Memory
-    Memory [label="ResearchMemory\n(crew-memory)", shape=cylinder, fillcolor=lightgray, style=filled]
+    // Memory (implemented by mofa-memory skill)
+    Memory [label="ResearchMemory\n(mofa-memory)", shape=cylinder, fillcolor=lightcyan, style=filled]
 
     // HITL
     HITL [label="HITL\nRequest Input", shape=hexagon, fillcolor=lightsalmon, style=filled]
 
     // Edges
     User -> Entry
+    Entry -> Memory [label="retrieve_memory\n(query=user_query)", style=dashed, color=blue]
     Entry -> Discovery
 
     Discovery -> Evaluate
@@ -46,6 +47,6 @@ digraph DeepResearchArchitecture {
     HITL -> Discovery [label="guidance", style=dashed]
 
     Synthesize -> Report
-    Synthesize -> Memory [label="persist"]
-    KB -> Memory [label="cache"]
+    Synthesize -> Memory [label="store_memory\n(content=report, tags=[slug, topic])"]
+    KB -> Memory [label="store_memory\n(content=facts, tags=[slug, 'kb-cache'])"]
 }
