@@ -1,0 +1,60 @@
+digraph VercelWebArchitecture {
+    graph [label="Vercel Web Deploy Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // User
+    User [label="User Request\n(网站需求)", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Analysis
+    Analysis [label="需求分析\n• 确定类型\n• 选择技术栈", fillcolor=lightyellow, style=filled]
+
+    // Tech Stack Selection
+    Stack [label="技术栈选择", shape=diamond, fillcolor=lightyellow, style=filled]
+    HTML [label="静态 HTML\n单文件", fillcolor=lightgreen, style=filled]
+    NextJS [label="Next.js\nReact 框架", fillcolor=lightgreen, style=filled]
+    React [label="React + Vite\n单页应用", fillcolor=lightgreen, style=filled]
+    Vue [label="Vue + Vite\n轻量框架", fillcolor=lightgreen, style=filled]
+
+    // Code Generation
+    Generate [label="Claude Code\n生成项目代码", fillcolor=lightcyan, style=filled]
+
+    // Local Preview
+    Preview [label="本地预览\n验证效果", fillcolor=lightyellow, style=filled]
+
+    // Deploy
+    Deploy [label="Vercel CLI/API\n部署", fillcolor=lightgreen, style=filled]
+    Vercel [label="Vercel 平台\n托管服务", shape=cloud, fillcolor=lightblue, style=filled]
+
+    // Output
+    Output [label="在线网站\nhttps://xxx.vercel.app", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="VERCEL_TOKEN\n身份验证", shape=hexagon, fillcolor=lightsalmon, style=filled]
+
+    // Onboarding
+    Onboarding [label="获取 Token:\n1. npm i -g vercel\n2. vercel login\n3. 或访问 vercel.com/settings/tokens", shape=note, fillcolor=lightyellow, style=filled]
+
+    // Edges
+    User -> Analysis
+    Analysis -> Stack
+
+    Stack -> HTML [label="简单页面"]
+    Stack -> NextJS [label="复杂应用"]
+    Stack -> React [label="SPA"]
+    Stack -> Vue [label="轻量"]
+
+    HTML -> Generate
+    NextJS -> Generate
+    React -> Generate
+    Vue -> Generate
+
+    Generate -> Preview
+    Preview -> Deploy [label="确认"]
+
+    Deploy -> Vercel
+    Vercel -> Output
+
+    Auth -> Deploy [style=dashed, color=red]
+    Onboarding -> Auth [style=dashed, color=gray]
+}
