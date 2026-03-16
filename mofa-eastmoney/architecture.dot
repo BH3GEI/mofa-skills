@@ -1,0 +1,72 @@
+digraph EastmoneyArchitecture {
+    graph [label="Eastmoney Financial Data Skill Architecture", fontsize=14, fontname="Helvetica"]
+    node [shape=box, fontname="Helvetica", fontsize=10]
+    edge [fontname="Helvetica", fontsize=9]
+
+    // Entry
+    User [label="User Query\n(自然语言)", shape=ellipse, fillcolor=lightblue, style=filled]
+    Entry [label="Intent Parser\n• 识别查询类型", fillcolor=lightyellow, style=filled]
+
+    // Router
+    Router [label="API Router", shape=diamond, fillcolor=lightyellow, style=filled]
+
+    // Four Capabilities
+    FinData [label="MX_FinData\n金融数据查询\n• 股票/债券/指数\n• 实时行情/财务", fillcolor=lightgreen, style=filled]
+    MacroData [label="MX_MacroData\n宏观经济数据\n• GDP/CPI/M2\n• 商品价格", fillcolor=lightgreen, style=filled]
+    FinSearch [label="MX_FinSearch\n金融资讯搜索\n• 新闻/公告/研报", fillcolor=lightgreen, style=filled]
+    StockPick [label="MX_StockPick\n智能选股\n• A股/港股/美股\n• 基金/ETF", fillcolor=lightgreen, style=filled]
+
+    // API
+    API [label="Eastmoney API\nai-saas.eastmoney.com", shape=cylinder, fillcolor=lightcyan, style=filled]
+
+    // Processing
+    Process [label="Data Processing\n• 清洗\n• 格式转换\n• 中文列名", fillcolor=lightyellow, style=filled]
+
+    // Output
+    Excel [label="Excel (.xlsx)\n多 sheet", fillcolor=lightpink, style=filled]
+    CSV [label="CSV (.csv)\n按频率分组", fillcolor=lightpink, style=filled]
+    TXT [label="Text (.txt)\n结果说明", fillcolor=lightpink, style=filled]
+    Output [label="Output Files", shape=ellipse, fillcolor=lightblue, style=filled]
+
+    // Auth
+    Auth [label="Auth\nEM_API_KEY", shape=hexagon, fillcolor=lightsalmon, style=filled]
+    Onboarding [label="Onboarding:\n1. ai.eastmoney.com\n2. 注册账号\n3. 创建 API Key", shape=note, fillcolor=lightyellow, style=filled]
+
+    // Constraints
+    Constraint [label="Constraints:\n• 实体 ≤ 5\n• 指标 ≤ 3", shape=note, fillcolor=lightgreen, style=filled]
+
+    // Edges
+    User -> Entry
+    Entry -> Router
+
+    Router -> FinData [label="金融数据"]
+    Router -> MacroData [label="宏观经济"]
+    Router -> FinSearch [label="资讯搜索"]
+    Router -> StockPick [label="选股选基"]
+
+    FinData -> API
+    MacroData -> API
+    FinSearch -> API
+    StockPick -> API
+
+    API -> Process
+    Process -> Excel
+    Process -> CSV
+    Process -> TXT
+
+    Excel -> Output
+    CSV -> Output
+    TXT -> Output
+
+    Auth -> API [style=dashed, color=red]
+    Onboarding -> Auth [style=dashed, color=gray]
+
+    FinData -> Constraint [style=dashed, color=gray]
+
+    // Scripts
+    Scripts [label="Scripts:\nmx_findata.py\nmx_macrodata.py\nmx_finsearch.py\nmx_stockpick.py", shape=note, fillcolor=lightgray, style=filled]
+    FinData -> Scripts [style=dashed, color=gray]
+    MacroData -> Scripts [style=dashed, color=gray]
+    FinSearch -> Scripts [style=dashed, color=gray]
+    StockPick -> Scripts [style=dashed, color=gray]
+}
