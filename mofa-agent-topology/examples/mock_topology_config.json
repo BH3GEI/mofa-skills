@@ -1,0 +1,17 @@
+{
+  "network_name": "MoFA Cognitive Swarm V1",
+  "gateway": "Edge-Router-01",
+  "nodes": [
+    { "id": "SearchAgent", "type": "Information Retrieval", "health": "Active" },
+    { "id": "SynthesizerAgent", "type": "Data Processing", "health": "Active" },
+    { "id": "ReviewAgent", "type": "Quality Assurance", "health": "Active" },
+    { "id": "StorageAgent", "type": "Memory/Database Persistence", "health": "Passive" }
+  ],
+  "connections": [
+    { "from": "Edge-Router-01", "to": "SearchAgent", "protocol": "HTTP/REST" },
+    { "from": "SearchAgent", "to": "SynthesizerAgent", "protocol": "gRPC", "label": "Raw Web Data" },
+    { "from": "SynthesizerAgent", "to": "ReviewAgent", "protocol": "gRPC", "label": "Draft Report" },
+    { "from": "ReviewAgent", "to": "StorageAgent", "protocol": "TCP", "label": "Final Artifact (Save)" },
+    { "from": "ReviewAgent", "to": "SynthesizerAgent", "protocol": "gRPC", "label": "Revision Feedback" }
+  ]
+}

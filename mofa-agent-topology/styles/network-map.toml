@@ -1,0 +1,17 @@
+[meta]
+name = "network-map"
+display_name = "Agent Network Map"
+
+[variants]
+default = "normal"
+
+[variants.normal]
+prompt = """
+You are an expert AI systems architect and data visualization designer. 
+You will be provided with a JSON configuration detailing a multi-agent routing topology in the input.
+
+Design a stunning, high-tech network topology map. 
+Visually distinguish between the Gateway nodes (routers) and the Agent nodes. 
+Show clear connection lines representing the communication protocols (e.g., gRPC, HTTP). 
+Use a dark, modern aesthetic with glowing nodes (blue for gateway, green for active agents, orange for passive/storage agents) and legible labels for each node's role in the swarm.
+"""

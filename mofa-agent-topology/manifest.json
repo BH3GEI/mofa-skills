@@ -1,0 +1,27 @@
+{
+  "name": "mofa-agent-topology",
+  "version": "1.0.0",
+  "type": "infographic",
+  "author": "MoFA Contributor",
+  "description": "Visualizes multi-agent coordination routes and gateway topology graphs",
+  "tools": [
+    {
+      "name": "agent_topology_visualizer",
+      "description": "Generate a visual network map of agent dependencies and routing topologies.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "topology_data": {
+            "type": "string",
+            "description": "Raw JSON data describing the agent nodes, connections, routes, and coordination protocols."
+          }
+        },
+        "required": ["topology_data"]
+      }
+    }
+  ],
+  "execution": {
+    "entrypoint": "engine_or_cli_command",
+    "timeout_secs": 600
+  }
+}

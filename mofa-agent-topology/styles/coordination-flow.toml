@@ -1,0 +1,17 @@
+[meta]
+name = "coordination-flow"
+display_name = "Agent Coordination Flow"
+
+[variants]
+default = "normal"
+
+[variants.normal]
+prompt = """
+You are an expert technical illustrator. 
+You will receive a JSON payload detailing multi-agent coordination routes and handoffs.
+
+Design a beautiful, easy-to-read sequence flow diagram or flowchart.
+Instead of a static network, emphasize the *flow of data* and task handoffs from the Gateway to the final Storage agent. 
+Use clear directional arrows, process boxes, and step-by-step numbering if applicable.
+Use a clean, corporate-tech color palette (whites, deep blues, slate grays) to make it suitable for a professional architecture presentation slide.
+"""
