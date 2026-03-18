@@ -61,6 +61,8 @@ Response: {"access": "...", "refresh": "..."}
 | `/api/podcasts/shows/<slug>/update/` | PUT | 更新节目 | 是 |
 | `/api/podcasts/shows/<slug>/delete/` | DELETE | 删除节目 | 是 |
 
+**获取节目单集**: `/api/podcasts/episodes/?show_slug=<slug>` (GET, 无需认证)
+
 #### 单集 (Episodes)
 | 端点 | 方法 | 说明 | 认证 |
 |------|------|------|------|
