@@ -23,6 +23,21 @@ AI-powered content generation platform that turns text into visual media — pre
 | **mofa-logo** | SVG | 8 styles | AI logo generation with Claude Opus 4.6 — minimalist, mascot, emblem, wordmark |
 | **mofa-fm** | `.wav` | — | Voice TTS with custom voice cloning via Qwen3-TTS on Apple Silicon |
 
+### DingTalk Wukong Skills (from [stvlynn/dingtalk-wukong-skills](https://github.com/stvlynn/dingtalk-wukong-skills))
+
+| Skill | Description |
+|-------|-------------|
+| **docx** | Advanced Word document creation/editing with tracked changes, comments, formatting preservation |
+| **xlsx** | Excel spreadsheet processing with formulas, data analysis, and visualization |
+| **pptx** | PowerPoint presentation creation/editing, including HTML-to-PPT conversion |
+| **pdf** | PDF processing — text/table extraction, creation, merging/splitting, form filling |
+| **pdf-convert-to-word** | Professional PDF to Word/Markdown conversion |
+| **dws** | DingTalk workspace operations (OA, calendar, docs, todo, chat, approval, attendance, etc.) |
+| **12306-train-query** | Real-time 12306 train ticket and schedule queries |
+| **ctrip-flight-search** | Global flight search and price comparison via Ctrip |
+| **dianping-info-query** | Local merchant info and reviews from Dianping (大众点评) |
+| **skill-creator** | Meta-tool for designing, validating, and packaging new agent skills |
+
 ## Architecture
 
 ```
